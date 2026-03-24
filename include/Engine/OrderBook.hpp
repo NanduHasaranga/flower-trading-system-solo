@@ -17,7 +17,7 @@ private:
 
 public:
     OrderBook() = default;
-    std::vector<ExecutionReport> processOrder(const Order &order);
+    std::vector<ExecutionReport> processOrder(Order &order);
 };
 
 #endif

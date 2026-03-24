@@ -1,4 +1,4 @@
-#include "include\Engine\OrderBook.hpp"
+#include "Engine\OrderBook.hpp"
 
 long OrderBook::nextOrderId = 1;
 
@@ -17,9 +17,11 @@ bool OrderBook::isMatchingOrder(const Order &order) {
         return false;
 }
 
-std::vector<ExecutionReport> OrderBook::processOrder(const Order &order) {
+std::vector<ExecutionReport> OrderBook::processOrder(Order &order) {
     std::vector<ExecutionReport> reports;
     std::string orderId = generateOrderID();
+
+    bool isProceed = false;
 
     if(order.side == Side::Sell) {    
         while(isMatchingOrder(order)) {        
@@ -34,7 +36,9 @@ std::vector<ExecutionReport> OrderBook::processOrder(const Order &order) {
                 }else {
                     reports.push_back(ExecutionReport(order.clientOrderId, orderId, order.instrument, order.side, topOrder.price, proceedQuantity, OrderStatus::Pfill, " ", " "));
                      reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.clientOrderId, topOrder.instrument, topOrder.side, topOrder.price, proceedQuantity, OrderStatus::Fill, " ", " "));
+                     order.quantity = order.quantity - proceedQuantity;
                      OrderBook::buyingSide.removeTopOrder();
+                     isProceed = true;
                 }
             }else {
                 int proceedQuantity = order.quantity;
@@ -44,11 +48,12 @@ std::vector<ExecutionReport> OrderBook::processOrder(const Order &order) {
                 return reports;
             }
         }
-        reports.push_back(ExecutionReport(order.clientOrderId, orderId, order.instrument, order.side, order.price, order.quantity, OrderStatus::New, " ", " "));
+        if(!isProceed)
+            reports.push_back(ExecutionReport(order.clientOrderId, orderId, order.instrument, order.side, order.price, order.quantity, OrderStatus::New, " ", " "));
         OrderBook::sellingSide.insertOrder(order);
         return reports;
     }else {
-        while(isMatchingOrder(order)){
+        while(isMatchingOrder(order)) {
              Order topOrder = OrderBook::sellingSide.getBestOrder();
              if(order.quantity >= topOrder.quantity) {
                 int proceedQuantity = topOrder.quantity;
@@ -60,7 +65,9 @@ std::vector<ExecutionReport> OrderBook::processOrder(const Order &order) {
                 }else {
                     reports.push_back(ExecutionReport(order.clientOrderId, orderId, order.instrument, order.side, topOrder.price, proceedQuantity, OrderStatus::Pfill, " ", " "));
                      reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.clientOrderId, topOrder.instrument, topOrder.side, topOrder.price, proceedQuantity, OrderStatus::Fill, " ", " "));
+                     order.quantity = order.quantity - proceedQuantity;
                      OrderBook::sellingSide.removeTopOrder();
+                     isProceed = true;
                 }
             }else {
                 int proceedQuantity = order.quantity;
@@ -70,7 +77,8 @@ std::vector<ExecutionReport> OrderBook::processOrder(const Order &order) {
                 return reports;
             }
         }
-        reports.push_back(ExecutionReport(order.clientOrderId, orderId, order.instrument, order.side, order.price, order.quantity, OrderStatus::New, " ", " "));
+        if(!isProceed)
+            reports.push_back(ExecutionReport(order.clientOrderId, orderId, order.instrument, order.side, order.price, order.quantity, OrderStatus::New, " ", " "));
         OrderBook::buyingSide.insertOrder(order);
         return reports;
     }    
