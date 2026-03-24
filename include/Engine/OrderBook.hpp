@@ -1,21 +1,23 @@
 #ifndef ORDERBOOK_HPP
 #define ORDERBOOK_HPP
 
-class OrderBook
-{
+#include <vector>
+#include "OrderBookSide.hpp"
+#include "./Core/ExecutionReport.hpp"
+#include "./Core/Types.hpp"
+
+class OrderBook {
 private:
-    
+    static long nextOrderId;
+    Instrument instrument;
+    OrderBookSide<BuyComparator> buyingSide;
+    OrderBookSide<SellComparator> sellingSide;
+    std::string generateOrderID();
+    bool isMatchingOrder(const Order &order);
+
 public:
-    OrderBook(/* args */);
-    ~OrderBook();
+    OrderBook() = default;
+    std::vector<ExecutionReport> processOrder(const Order &order);
 };
-
-OrderBook::OrderBook(/* args */)
-{
-}
-
-OrderBook::~OrderBook()
-{
-}
 
 #endif
