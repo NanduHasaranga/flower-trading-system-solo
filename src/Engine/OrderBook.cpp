@@ -1,0 +1,77 @@
+#include "include\Engine\OrderBook.hpp"
+
+long OrderBook::nextOrderId = 1;
+
+std::string OrderBook::generateOrderID() {
+    return "ord" + std::to_string(nextOrderId++);
+}
+
+
+bool OrderBook::isMatchingOrder(const Order &order) {
+
+    if(order.side == Side::Sell && !OrderBook::buyingSide.isEmpty() && OrderBook::buyingSide.getBestOrder().price >= order.price && order.quantity > 0) {
+        return true;
+    }else if (order.side == Side::Buy && !OrderBook::sellingSide.isEmpty() && OrderBook::sellingSide.getBestOrder().price <= order.price && order.quantity > 0) {
+        return true;
+    }else
+        return false;
+}
+
+std::vector<ExecutionReport> OrderBook::processOrder(const Order &order) {
+    std::vector<ExecutionReport> reports;
+    std::string orderId = generateOrderID();
+
+    if(order.side == Side::Sell) {    
+        while(isMatchingOrder(order)) {        
+            Order topOrder = OrderBook::buyingSide.getBestOrder();
+            if(order.quantity >= topOrder.quantity) {
+                int proceedQuantity = topOrder.quantity;
+                if(order.quantity == topOrder.quantity){
+                    reports.push_back(ExecutionReport(order.clientOrderId, orderId, order.instrument, order.side, topOrder.price, proceedQuantity, OrderStatus::Fill, " ", " "));
+                    reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.clientOrderId, topOrder.instrument, topOrder.side, topOrder.price, proceedQuantity, OrderStatus::Fill, " ", " "));
+                    OrderBook::buyingSide.removeTopOrder();
+                    return reports;
+                }else {
+                    reports.push_back(ExecutionReport(order.clientOrderId, orderId, order.instrument, order.side, topOrder.price, proceedQuantity, OrderStatus::Pfill, " ", " "));
+                     reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.clientOrderId, topOrder.instrument, topOrder.side, topOrder.price, proceedQuantity, OrderStatus::Fill, " ", " "));
+                     OrderBook::buyingSide.removeTopOrder();
+                }
+            }else {
+                int proceedQuantity = order.quantity;
+                reports.push_back(ExecutionReport(order.clientOrderId, orderId, order.instrument, order.side, topOrder.price, proceedQuantity, OrderStatus::Fill, " ", " "));
+                reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.clientOrderId, topOrder.instrument, topOrder.side, topOrder.price, proceedQuantity, OrderStatus::Pfill, " ", " "));
+                OrderBook::buyingSide.updateTopOrderQuantity(topOrder.quantity - proceedQuantity);
+                return reports;
+            }
+        }
+        reports.push_back(ExecutionReport(order.clientOrderId, orderId, order.instrument, order.side, order.price, order.quantity, OrderStatus::New, " ", " "));
+        OrderBook::sellingSide.insertOrder(order);
+        return reports;
+    }else {
+        while(isMatchingOrder(order)){
+             Order topOrder = OrderBook::sellingSide.getBestOrder();
+             if(order.quantity >= topOrder.quantity) {
+                int proceedQuantity = topOrder.quantity;
+                if(order.quantity == topOrder.quantity){
+                    reports.push_back(ExecutionReport(order.clientOrderId, orderId, order.instrument, order.side, topOrder.price, proceedQuantity, OrderStatus::Fill, " ", " "));
+                    reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.clientOrderId, topOrder.instrument, topOrder.side, topOrder.price, proceedQuantity, OrderStatus::Fill, " ", " "));
+                    OrderBook::sellingSide.removeTopOrder();
+                    return reports;
+                }else {
+                    reports.push_back(ExecutionReport(order.clientOrderId, orderId, order.instrument, order.side, topOrder.price, proceedQuantity, OrderStatus::Pfill, " ", " "));
+                     reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.clientOrderId, topOrder.instrument, topOrder.side, topOrder.price, proceedQuantity, OrderStatus::Fill, " ", " "));
+                     OrderBook::sellingSide.removeTopOrder();
+                }
+            }else {
+                int proceedQuantity = order.quantity;
+                reports.push_back(ExecutionReport(order.clientOrderId, orderId, order.instrument, order.side, topOrder.price, proceedQuantity, OrderStatus::Fill, " ", " "));
+                reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.clientOrderId, topOrder.instrument, topOrder.side, topOrder.price, proceedQuantity, OrderStatus::Pfill, " ", " "));
+                OrderBook::sellingSide.updateTopOrderQuantity(topOrder.quantity - proceedQuantity);
+                return reports;
+            }
+        }
+        reports.push_back(ExecutionReport(order.clientOrderId, orderId, order.instrument, order.side, order.price, order.quantity, OrderStatus::New, " ", " "));
+        OrderBook::buyingSide.insertOrder(order);
+        return reports;
+    }    
+}
