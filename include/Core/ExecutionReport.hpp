@@ -4,8 +4,7 @@
 #include <string>
 #include "Types.hpp"
 
-struct ExecutionReport
-{
+struct ExecutionReport {
     std::string clientOrderId;
     std::string orderId;
     Instrument instrument;
@@ -14,9 +13,7 @@ struct ExecutionReport
     int quantity;
     int status;
     std::string reason;
-    std::string transactionTime;
-
-    
+    std::string transactionTime;    
 };
 
 #endif
