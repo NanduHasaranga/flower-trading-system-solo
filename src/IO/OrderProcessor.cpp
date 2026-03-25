@@ -1,7 +1,7 @@
 #include "IO/OrderProcessor.hpp"
 #include <string>
-#include "Order.hpp"
-#include "RawOrder.hpp"
+#include "Core/Order.hpp"
+#include "Core/RawOrder.hpp"
 #include "OrderReject.hpp"
 #include "Utils/TimeUtils.hpp"
 
