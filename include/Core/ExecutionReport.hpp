@@ -13,7 +13,6 @@ struct ExecutionReport
     double price;
     int quantity;
     OrderStatus status;
-    std::string reason;
     std::string transactionTime;
 
     ExecutionReport() = default;
@@ -26,7 +25,6 @@ struct ExecutionReport
         double price,
         int quantity,
         OrderStatus status,
-        std::string reason,
-        std::string transactionTime) : clientOrderId(clientOrderId), orderId(orderId), instrument(instrument), side(side), price(price), quantity(quantity), status(status), reason(reason), transactionTime(transactionTime) {}
+        std::string transactionTime) : clientOrderId(clientOrderId), orderId(orderId), instrument(instrument), side(side), price(price), quantity(quantity), status(status), transactionTime(transactionTime) {}
 };
 #endif
