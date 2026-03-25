@@ -2,7 +2,7 @@
 #include <string>
 #include "Core/Order.hpp"
 #include "Core/RawOrder.hpp"
-#include "OrderReject.hpp"
+#include "Core/OrderReject.hpp"
 #include "Utils/TimeUtils.hpp"
 
 long OrderProcessor::nextOrderId = 1;
@@ -66,13 +66,13 @@ std::variant<Order, OrderReject> OrderProcessor::processRow(const std::vector<st
             row.size() > 0 ? row[0] : "",
             row.size() > 1 ? row[1] : "",
             row.size() > 2 ? row[2] : "",
-            row.size() > 3 ? row[3] : "",
             row.size() > 4 ? row[4] : "",
+            row.size() > 3 ? row[3] : "",
             "Missing required field(s)",
             utils::getCurrentTimestamp()};
     }
 
-    RawOrder raw{row[0], row[1], row[2], row[3], row[4]};
+    RawOrder raw{row[0], row[1], row[2], row[4], row[3]};
 
     // Validation
     std::string reason;
