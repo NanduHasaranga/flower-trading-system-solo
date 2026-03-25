@@ -1,12 +1,14 @@
 #ifndef TYPES_HPP
 #define TYPES_HPP
 
-enum class Side {
+enum class Side
+{
     Buy = 1,
     Sell = 2
 };
 
-enum class OrderStatus {
+enum class OrderStatus
+{
     New = 0,
     Reject = 1,
     Fill = 2,
@@ -14,7 +16,8 @@ enum class OrderStatus {
 
 };
 
-enum class Instrument {
+enum class Instrument
+{
     Rose,
     Lavender,
     Lotus,
@@ -22,4 +25,4 @@ enum class Instrument {
     Orchid
 };
 
-#endif 
+#endif

@@ -1,10 +1,10 @@
 #include "Engine\OrderBook.hpp"
 
-long OrderBook::nextOrderId = 1;
+// long OrderBook::nextOrderId = 1;
 
-std::string OrderBook::generateOrderID() {
-    return "ord" + std::to_string(nextOrderId++);
-}
+// std::string OrderBook::generateOrderID() {
+//     return "ord" + std::to_string(nextOrderId++);
+// }
 
 
 bool OrderBook::isMatchingOrder(const Order &order) {
@@ -19,7 +19,7 @@ bool OrderBook::isMatchingOrder(const Order &order) {
 
 std::vector<ExecutionReport> OrderBook::processOrder(Order &order) {
     std::vector<ExecutionReport> reports;
-    order.orderId = generateOrderID();    
+    //order.orderId = generateOrderID();    
 
     bool isProceed = false;
 
@@ -34,7 +34,7 @@ std::vector<ExecutionReport> OrderBook::processOrder(Order &order) {
                     OrderBook::buyingSide.removeTopOrder();
                     return reports;
                 }else {
-                    reports.push_back(ExecutionReport(order.clientOrderId, order.orderId, order.instrument, order.side, topOrder.price, proceedQuantity, OrderStatus::Pfill, " ", " "));
+                    reports.push_back(ExecutionReport(order.clientOrderId, order.orderId, order.instrument, order.side, topOrder.price, proceedQuantity, OrderStatus::PFill, " ", " "));
                      reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.orderId, topOrder.instrument, topOrder.side, topOrder.price, proceedQuantity, OrderStatus::Fill, " ", " "));
                      order.quantity = order.quantity - proceedQuantity;
                      OrderBook::buyingSide.removeTopOrder();
@@ -43,7 +43,7 @@ std::vector<ExecutionReport> OrderBook::processOrder(Order &order) {
             }else {
                 int proceedQuantity = order.quantity;
                 reports.push_back(ExecutionReport(order.clientOrderId, order.orderId, order.instrument, order.side, topOrder.price, proceedQuantity, OrderStatus::Fill, " ", " "));
-                reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.orderId, topOrder.instrument, topOrder.side, topOrder.price, proceedQuantity, OrderStatus::Pfill, " ", " "));
+                reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.orderId, topOrder.instrument, topOrder.side, topOrder.price, proceedQuantity, OrderStatus::PFill, " ", " "));
                 OrderBook::buyingSide.updateTopOrderQuantity(topOrder.quantity - proceedQuantity);
                 return reports;
             }
@@ -63,7 +63,7 @@ std::vector<ExecutionReport> OrderBook::processOrder(Order &order) {
                     OrderBook::sellingSide.removeTopOrder();
                     return reports;
                 }else {
-                    reports.push_back(ExecutionReport(order.clientOrderId, order.orderId, order.instrument, order.side, topOrder.price, proceedQuantity, OrderStatus::Pfill, " ", " "));
+                    reports.push_back(ExecutionReport(order.clientOrderId, order.orderId, order.instrument, order.side, topOrder.price, proceedQuantity, OrderStatus::PFill, " ", " "));
                      reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.orderId, topOrder.instrument, topOrder.side, topOrder.price, proceedQuantity, OrderStatus::Fill, " ", " "));
                      order.quantity = order.quantity - proceedQuantity;
                      OrderBook::sellingSide.removeTopOrder();
@@ -72,7 +72,7 @@ std::vector<ExecutionReport> OrderBook::processOrder(Order &order) {
             }else {
                 int proceedQuantity = order.quantity;
                 reports.push_back(ExecutionReport(order.clientOrderId, order.orderId, order.instrument, order.side, topOrder.price, proceedQuantity, OrderStatus::Fill, " ", " "));
-                reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.orderId, topOrder.instrument, topOrder.side, topOrder.price, proceedQuantity, OrderStatus::Pfill, " ", " "));
+                reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.orderId, topOrder.instrument, topOrder.side, topOrder.price, proceedQuantity, OrderStatus::PFill, " ", " "));
                 OrderBook::sellingSide.updateTopOrderQuantity(topOrder.quantity - proceedQuantity);
                 return reports;
             }
