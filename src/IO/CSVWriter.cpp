@@ -3,12 +3,12 @@
 #include <fstream>
 #include <iomanip>
 
-void CsvWriter::writeRejects(const std::string& path, const std::vector<OrderReject>& rejects)
+void CsvWriter::writeRejects(const std::string &path, const std::vector<OrderReject> &rejects)
 {
     std::ofstream file(path);
     file << "clientOrderId,instrument,side,price,quantity,reason,timestamp\n";
-    
-    for (const auto& r : rejects)
+
+    for (const auto &r : rejects)
     {
         file << r.clientOrderId << ","
              << r.instrument << ","
@@ -20,20 +20,60 @@ void CsvWriter::writeRejects(const std::string& path, const std::vector<OrderRej
     }
 }
 
-void CsvWriter::writeExecutions(const std::string& path, const std::vector<ExecutionReport>& reports)
+void CsvWriter::writeExecutions(const std::string &path, const std::vector<ExecutionReport> &reports)
 {
     std::ofstream file(path);
-    file << "clientOrderId,orderId,instrument,side,price,quantity,status,transactionTime\n";
-    
-    for (const auto& r : reports)
+    file << "Order ID,Client Order ID,Instrument,Side,Exec Status,Quantity,Price,Reason,Transaction Time\n";
+
+    for (const auto &r : reports)
     {
-        file << r.clientOrderId << ","
-             << r.orderId << ","
+        file << r.orderId << ","
+             << r.clientOrderId << ","
              << to_string(r.instrument) << ","
-             << to_string(r.side) << ","
-             << std::fixed << std::setprecision(2) << r.price << ","
+             << static_cast<int>(r.side) << ","
+             << static_cast<int>(r.status) << ","
              << r.quantity << ","
-             << to_string(r.status) << ","
+             << std::fixed << std::setprecision(2) << r.price << ","
+             << ","
              << r.transactionTime << "\n";
+    }
+}
+
+void CsvWriter::writeChronological(const std::string &path, const std::vector<Record> &records)
+{
+    std::ofstream file(path);
+    file << "Order ID,Client Order ID,Instrument,Side,Exec Status,Quantity,Price,Reason,Transaction Time\n";
+
+    for (const auto &record : records)
+    {
+        std::visit([&file](auto &&arg)
+                   {
+            using T = std::decay_t<decltype(arg)>;
+            if constexpr (std::is_same_v<T, ExecutionReport>)
+            {
+                const auto& r = arg;
+                 file << r.orderId << ","
+                     << r.clientOrderId << ","
+                     << to_string(r.instrument) << ","
+                     << static_cast<int>(r.side) << ","
+                     << static_cast<int>(r.status) << ","
+                     << r.quantity << ","
+                     << std::fixed << std::setprecision(2) << r.price << ","
+                     << ","
+                     << r.transactionTime << "\n";
+            }
+            else if constexpr (std::is_same_v<T, OrderReject>)
+            {
+                const auto& r = arg;
+                 file << ","
+                     << r.clientOrderId << ","
+                     << r.instrument << ","
+                     << r.side << ","
+                     << static_cast<int>(OrderStatus::Reject) << ","
+                     << r.quantity << ","
+                     << r.price << ","
+                     << r.reason << ","
+                     << r.timestamp << "\n";
+            } }, record);
     }
 }
