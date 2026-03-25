@@ -8,11 +8,11 @@
 
 class OrderBook {
 private:
-    static long nextOrderId;
+    //static long nextOrderId;
     Instrument instrument;
     OrderBookSide<BuyComparator> buyingSide;
     OrderBookSide<SellComparator> sellingSide;
-    std::string generateOrderID();
+    //std::string generateOrderID();
     bool isMatchingOrder(const Order &order);
 
 public:
