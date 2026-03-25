@@ -53,27 +53,60 @@ int main() {
     //std::vector<std::string> row = {"aa13", "Rose", "1", "100", "55.00"};
    // std::vector<std::string> row1 = {"aa14", "Rose", "2", "100", "56.00"};
 
+
+    std::vector<std::vector<ExecutionReport>> reports;
+    Exchange exchange = Exchange();
+
     std::ifstream file("data/orders.csv");
     CsvReader reader;
 
-     // Skip header
+     
     std::string line;
 
+    // Skip header
     std::getline(file, line);
-    std::getline(file, line);
 
-    auto row = reader.parseLine(line);
+    while(std::getline(file, line)){
 
-    std::cout << row[0] << std::endl;
+        auto row = reader.parseLine(line);
 
-    auto result = OrderProcessor::processRow(row);
-    //auto result1 = OrderProcessor::processRow(row1);
+        std::cout << row[0] << std::endl;
 
-    if (std::holds_alternative<Order>(result)) {
-        auto ord = std::get<Order>(result);
-        std::cout << "Valid order: " << ord.orderId << " Price: " << ord.price << "\n";
-    } else {
-        auto report = std::get<ExecutionReport>(result);
-        std::cout << "Rejected order: " << report.orderId << " Reason: " << report.reason << "\n";
-    }        
+        auto result = OrderProcessor::processRow(row);
+        //auto result1 = OrderProcessor::processRow(row1);
+
+        if (std::holds_alternative<Order>(result)) {
+            std::vector<ExecutionReport> report;
+            
+            auto ord = std::get<Order>(result);
+            
+            auto& orderBook = exchange.getOrderBook(ord);
+            report = orderBook.processOrder(ord);
+            reports.push_back(report);
+
+            std::cout << "Valid order: " << ord.orderId << " Price: " << ord.price << "\n";
+        } else {
+            auto report = std::get<ExecutionReport>(result);
+            std::vector<ExecutionReport> rep;
+            rep.push_back(report);
+            reports.push_back(rep);
+            std::cout << "Rejected order: " << report.orderId << " Reason: " << report.reason << "\n";
+        }  
+    }
+    
+    for (int i = 0; i < reports.size(); i++) {
+        for (int j = 0; j < reports.at(i).size(); j++) {
+        std::cout << reports.at(i).at(j).clientOrderId << " ";
+        std::cout << reports.at(i).at(j).orderId << " ";
+        //std::cout << to_string(reports.at(i).at(j).side) << " ";
+        std::cout << reports.at(i).at(j).price << " ";
+        std::cout << reports.at(i).at(j).quantity << " ";
+        std::cout << to_string(reports.at(i).at(j).instrument) << " ";
+        std::cout << to_string(reports.at(i).at(j).status) << " ";
+        std::cout << reports.at(i).at(j).reason << " ";
+        //std::cout << to_string(st) << " ";
+        std::cout << std::endl;
+        }
+    }
+
 }
