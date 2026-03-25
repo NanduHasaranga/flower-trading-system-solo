@@ -4,7 +4,8 @@
 #include <string>
 #include "Types.hpp"
 
-struct ExecutionReport {
+struct ExecutionReport
+{
     std::string clientOrderId;
     std::string orderId;
     Instrument instrument;
@@ -17,15 +18,15 @@ struct ExecutionReport {
 
     ExecutionReport() = default;
 
-    ExecutionReport( 
-        std::string clientOrderId, 
-        std::string orderId, 
-        Instrument instrument,  
-        Side side, 
-        double price, 
-        int quantity, 
-        OrderStatus status,  
-        std::string reason, 
-        std::string transactionTime) : clientOrderId(clientOrderId), orderId(orderId), instrument(instrument), side(side), price(price), quantity(quantity), status(status), reason(" "), transactionTime(" ") {}
+    ExecutionReport(
+        std::string clientOrderId,
+        std::string orderId,
+        Instrument instrument,
+        Side side,
+        double price,
+        int quantity,
+        OrderStatus status,
+        std::string reason,
+        std::string transactionTime) : clientOrderId(clientOrderId), orderId(orderId), instrument(instrument), side(side), price(price), quantity(quantity), status(status), reason(reason), transactionTime(transactionTime) {}
 };
 #endif
