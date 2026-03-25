@@ -25,6 +25,6 @@ struct ExecutionReport
         double price,
         int quantity,
         OrderStatus status,
-        std::string transactionTime) : clientOrderId(clientOrderId), orderId(orderId), instrument(instrument), side(side), price(price), quantity(quantity), status(status), transactionTime(transactionTime) {}
+        std::string transactionTime) : clientOrderId(clientOrderId), orderId(orderId), instrument(instrument), side(side), price(price), quantity(quantity), status(status), transactionTime(std::move(transactionTime)) {}
 };
 #endif

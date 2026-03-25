@@ -7,6 +7,7 @@
 #include "Core/Types.hpp"
 #include "Core/ExecutionReport.hpp"
 #include "Core/OrderReject.hpp"
+#include "Core/RawOrder.hpp"
 #include "Core/Order.hpp"
 
 class OrderProcessor

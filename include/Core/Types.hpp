@@ -13,7 +13,6 @@ enum class OrderStatus
     Reject = 1,
     Fill = 2,
     PFill = 3
-
 };
 
 enum class Instrument
