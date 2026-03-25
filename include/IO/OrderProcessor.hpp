@@ -1,21 +1,24 @@
 #ifndef ORDERPROCESSOR_HPP
 #define ORDERPROCESSOR_HPP
 
-#include <variant>
-#include <vector>
 #include <string>
+#include <vector>
+#include <variant>
+#include "Core/Types.hpp"
+#include "Core/ExecutionReport.hpp"
+#include "Core/OrderReject.hpp"
 #include "Core/RawOrder.hpp"
 #include "Core/Order.hpp"
-#include "CsvRecord.hpp"
 
 class OrderProcessor
 {
-public:
-    std::variant<Order, CsvRecord> processRow(const std::vector<std::string>& row);
-
 private:
     static long nextOrderId;
-    std::string generateOrderID();
+    static std::string generateOrderID();
+    static Order createOrder(const RawOrder &raw, const std::string &orderId);
+
+public:
+    static std::variant<Order, OrderReject> processRow(const std::vector<std::string> &row);
 };
 
 #endif
