@@ -1,0 +1,67 @@
+# Compiled object files
+*.o
+*.obj
+*.out
+
+# Compiled dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Compiled static libraries
+*.a
+*.lib
+
+# Executables
+*.exe
+*.app
+exchange_app
+
+# Build directories
+build/
+cmake-build-debug/
+cmake-build-release/
+out/
+dist/
+
+# IDE and editor files
+.vscode/
+.vs/
+.idea/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.xcodeproj/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Backup files
+*.bak
+*.backup
+*.tmp
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Generated and temporary files
+*.d
+*.i
+*.s
+tags
+TAGS
+
+# CMake
+CMakeLists.txt.user
+CMakeUserPresets.json
+
+# Dependency/library files
+dependencies/
+vendor/
+third_party/
+
+# Output files (if not tracking)
+# Uncomment if you want to exclude data files
+# data/output.csv
