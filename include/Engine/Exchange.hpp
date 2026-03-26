@@ -3,13 +3,15 @@
 
 #include "OrderBook.hpp"
 
-class Exchange {
+class Exchange
+{
 private:
     std::map<Instrument, OrderBook> orderBooks;
 
 public:
     Exchange() = default;
-    OrderBook& getOrderBook(Order &order){
+    OrderBook &getOrderBook(Order &order)
+    {
         return Exchange::orderBooks[order.instrument];
     }
 };

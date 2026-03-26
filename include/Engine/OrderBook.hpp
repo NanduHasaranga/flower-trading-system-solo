@@ -6,13 +6,12 @@
 #include "./Core/ExecutionReport.hpp"
 #include "./Core/Types.hpp"
 
-class OrderBook {
+class OrderBook
+{
 private:
-    //static long nextOrderId;
     Instrument instrument;
     OrderBookSide<BuyComparator> buyingSide;
     OrderBookSide<SellComparator> sellingSide;
-    //std::string generateOrderID();
     bool isMatchingOrder(const Order &order);
 
 public:

@@ -5,7 +5,7 @@
 
 namespace utils
 {
-    // YYYYMMDD-HHMMSS.000 format
+    // YYYYMMDD-HHMMSS.000
     std::string getCurrentTimestamp();
 }
 

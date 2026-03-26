@@ -3,7 +3,8 @@
 
 #include <string>
 
-struct ExecutionReport {
+struct ExecutionReport
+{
     std::string clientOrderId;
     std::string orderId;
     std::string instrument;
@@ -16,15 +17,15 @@ struct ExecutionReport {
 
     ExecutionReport() = default;
 
-    ExecutionReport( 
-        std::string clientOrderId, 
-        std::string orderId, 
-        std::string instrument,  
-        std::string side, 
-        std::string price, 
-        std::string quantity, 
-        std::string status,  
-        std::string reason, 
+    ExecutionReport(
+        std::string clientOrderId,
+        std::string orderId,
+        std::string instrument,
+        std::string side,
+        std::string price,
+        std::string quantity,
+        std::string status,
+        std::string reason,
         std::string transactionTime) : clientOrderId(clientOrderId), orderId(orderId), instrument(instrument), side(side), price(price), quantity(quantity), status(status), reason(reason), transactionTime(transactionTime) {}
 };
 #endif

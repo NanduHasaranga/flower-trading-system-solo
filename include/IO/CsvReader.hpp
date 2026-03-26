@@ -4,9 +4,10 @@
 #include <string>
 #include <vector>
 
-class CsvReader {
-    public:
-        std::vector<std::string> parseLine(const std::string &line) const;
+class CsvReader
+{
+public:
+    std::vector<std::string> parseLine(const std::string &line) const;
 };
 
 #endif

@@ -3,17 +3,12 @@
 
 #include <string>
 #include <vector>
-// #include <variant>
 #include "Core/ExecutionReport.hpp"
-
-// using Record = std::variant<ExecutionReport, OrderReject>;
 
 class CsvWriter
 {
 public:
-    void writeExecutions(const std::string& path, const std::vector<ExecutionReport>& rejects);
-    // void writeExecutions(const std::string& path, const std::vector<ExecutionReport>& reports);
-    // void writeChronological(const std::string& path, const std::vector<Record>& records);
+    void writeExecutions(const std::string &path, const std::vector<ExecutionReport> &rejects);
 };
 
 #endif
