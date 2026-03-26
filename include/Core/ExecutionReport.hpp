@@ -2,6 +2,7 @@
 #define EXECUTIONREPORT_HPP
 
 #include <string>
+#include <utility>
 
 struct ExecutionReport
 {
@@ -26,6 +27,6 @@ struct ExecutionReport
         std::string quantity,
         std::string status,
         std::string reason,
-        std::string transactionTime) : clientOrderId(clientOrderId), orderId(orderId), instrument(instrument), side(side), price(price), quantity(quantity), status(status), reason(reason), transactionTime(transactionTime) {}
+        std::string transactionTime) : clientOrderId(std::move(clientOrderId)), orderId(std::move(orderId)), instrument(std::move(instrument)), side(std::move(side)), price(std::move(price)), quantity(std::move(quantity)), status(std::move(status)), reason(std::move(reason)), transactionTime(std::move(transactionTime)) {}
 };
 #endif
