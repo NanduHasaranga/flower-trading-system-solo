@@ -1,4 +1,4 @@
-#include "Engine/OrderBook.hpp"
+#include "Engine\OrderBook.hpp"
 #include "Utils/TimeUtils.hpp"
 
 // long OrderBook::nextOrderId = 1;
@@ -25,7 +25,9 @@ bool OrderBook::isMatchingOrder(const Order &order)
 std::vector<ExecutionReport> OrderBook::processOrder(Order &order)
 {
     std::vector<ExecutionReport> reports;
-    bool hasMatch = false;
+    // order.orderId = generateOrderID();
+
+    bool isProceed = false;
 
     if (order.side == Side::Sell)
     {
@@ -48,7 +50,7 @@ std::vector<ExecutionReport> OrderBook::processOrder(Order &order)
                     reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.orderId, topOrder.instrument, topOrder.side, topOrder.price, proceedQuantity, OrderStatus::Fill, utils::getCurrentTimestamp()));
                     order.quantity = order.quantity - proceedQuantity;
                     OrderBook::buyingSide.removeTopOrder();
-                    hasMatch = true;
+                    isProceed = true;
                 }
             }
             else
@@ -60,14 +62,8 @@ std::vector<ExecutionReport> OrderBook::processOrder(Order &order)
                 return reports;
             }
         }
-        if (hasMatch)
-        {
-            reports.push_back(ExecutionReport(order.clientOrderId, order.orderId, order.instrument, order.side, order.price, order.quantity, OrderStatus::PFill, utils::getCurrentTimestamp()));
-        }
-        else
-        {
-            reports.push_back(ExecutionReport(order.clientOrderId, order.orderId, order.instrument, order.side, order.price, order.quantity, OrderStatus::New, utils::getCurrentTimestamp()));
-        }
+        if (!isProceed)
+            reports.push_back(ExecutionReport(order.clientOrderId, order.orderId, order.instrument, order.side, order.price, order.quantity, OrderStatus::New, " "));
         OrderBook::sellingSide.insertOrder(order);
         return reports;
     }
@@ -92,7 +88,7 @@ std::vector<ExecutionReport> OrderBook::processOrder(Order &order)
                     reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.orderId, topOrder.instrument, topOrder.side, topOrder.price, proceedQuantity, OrderStatus::Fill, utils::getCurrentTimestamp()));
                     order.quantity = order.quantity - proceedQuantity;
                     OrderBook::sellingSide.removeTopOrder();
-                    hasMatch = true;
+                    isProceed = true;
                 }
             }
             else
@@ -104,14 +100,8 @@ std::vector<ExecutionReport> OrderBook::processOrder(Order &order)
                 return reports;
             }
         }
-        if (hasMatch)
-        {
-            reports.push_back(ExecutionReport(order.clientOrderId, order.orderId, order.instrument, order.side, order.price, order.quantity, OrderStatus::PFill, utils::getCurrentTimestamp()));
-        }
-        else
-        {
+        if (!isProceed)
             reports.push_back(ExecutionReport(order.clientOrderId, order.orderId, order.instrument, order.side, order.price, order.quantity, OrderStatus::New, utils::getCurrentTimestamp()));
-        }
         OrderBook::buyingSide.insertOrder(order);
         return reports;
     }
