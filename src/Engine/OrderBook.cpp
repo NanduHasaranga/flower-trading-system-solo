@@ -63,7 +63,7 @@ std::vector<ExecutionReport> OrderBook::processOrder(Order &order)
             }
         }
         if (!isProceed)
-            reports.push_back(ExecutionReport(order.clientOrderId, order.orderId, order.instrument, order.side, order.price, order.quantity, OrderStatus::New, " "));
+            reports.push_back(ExecutionReport(order.clientOrderId, order.orderId, order.instrument, order.side, order.price, order.quantity, OrderStatus::New, utils::getCurrentTimestamp()));
         OrderBook::sellingSide.insertOrder(order);
         return reports;
     }
