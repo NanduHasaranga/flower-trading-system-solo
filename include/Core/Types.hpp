@@ -7,8 +7,8 @@
 #include <stdexcept>
 
 enum class Side {
-    Buy = 1,
-    Sell = 2
+    Buy = 0,
+    Sell = 1
 };
 
 enum class OrderStatus {
@@ -32,7 +32,7 @@ constexpr std::array<const char*, 5> InstrumentStrings = {
 };
 
 constexpr std::array<const char*, 2> SideStrings = {
-    "Buy", "Sell"
+    "1", "2"
 };
 
 constexpr std::array<const char*, 4> OrderStatusStrings = {

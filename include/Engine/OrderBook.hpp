@@ -5,6 +5,7 @@
 #include "OrderBookSide.hpp"
 #include "./Core/ExecutionReport.hpp"
 #include "./Core/Types.hpp"
+#include "./Utils/StringUtils.hpp"
 
 class OrderBook {
 private:

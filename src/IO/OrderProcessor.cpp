@@ -78,11 +78,11 @@ std::variant<Order, ExecutionReport> OrderProcessor::processRow(const std::vecto
         return ExecutionReport{
             clientId,
             orderId,
-            inst,
-            side,
-            price,
-            quantity,
-            OrderStatus::Reject,
+            row.size() > 1 ? row[1] : "",
+            row.size() > 2 ? row[2] : "",
+            row.size() > 4 ? row[4] : "",
+            row.size() > 3 ? row[3] : "",
+            "Reject",
             reason,
             " "  // transactionTime placeholder
         };
