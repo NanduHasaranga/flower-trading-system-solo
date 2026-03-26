@@ -17,16 +17,15 @@ int main()
     Exchange exchange;
     CsvReader reader;
     CsvWriter writer;
+    OrderProcessor processor;
 
     std::ifstream file("data/orders.csv");
-    auto rows = reader.parseFile(file);
 
-    for (const auto& row : rows)
-    {
-        if (row.empty())
-            continue;
+    reader.parseFile(file, [&](const std::vector<std::string> &row)
+                     {
+        if (row.empty()) return;
 
-        auto result = OrderProcessor::processRow(row);
+        auto result = processor.processRow(row);
 
         if (std::holds_alternative<Order>(result))
         {
@@ -42,8 +41,7 @@ int main()
         else
         {
             records.push_back(std::get<OrderReject>(result));
-        }
-    }
+        } });
 
     writer.writeChronological("data/output.csv", records);
 

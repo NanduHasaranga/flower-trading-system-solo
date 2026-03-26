@@ -4,12 +4,15 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <functional>
 
 class CsvReader
 {
 public:
+    using RowCallback = std::function<void(const std::vector<std::string> &)>;
+
     std::vector<std::string> parseLine(const std::string &line) const;
-    std::vector<std::vector<std::string>> parseFile(std::ifstream &file) const;
+    void parseFile(std::ifstream &file, RowCallback callback) const;
 };
 
 #endif

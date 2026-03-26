@@ -21,17 +21,14 @@ std::vector<std::string> CsvReader::parseLine(const std::string &line) const
     return result;
 }
 
-std::vector<std::vector<std::string>> CsvReader::parseFile(std::ifstream &file) const
+void CsvReader::parseFile(std::ifstream &file, RowCallback callback) const
 {
-    std::vector<std::vector<std::string>> rows;
     std::string line;
-
     std::getline(file, line);
-
     while (std::getline(file, line))
     {
-        rows.push_back(parseLine(line));
+        if (line.empty())
+            continue;
+        callback(parseLine(line));
     }
-
-    return rows;
 }

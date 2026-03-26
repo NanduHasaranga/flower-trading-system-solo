@@ -29,7 +29,7 @@ enum class Instrument
 constexpr std::array<const char *, 5> InstrumentStrings = {
     "Rose", "Lavender", "Lotus", "Tulip", "Orchid"};
 
-// Enum → string (fast O(1) lookup)
+
 inline constexpr const char *to_string(Instrument i)
 {
     return InstrumentStrings[static_cast<int>(i)];
