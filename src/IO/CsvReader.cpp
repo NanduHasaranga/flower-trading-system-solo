@@ -24,22 +24,6 @@ bool CsvReader::open(const std::string &filepath)
     return true;
 }
 
-std::optional<std::vector<std::string>> CsvReader::nextRow()
-{
-    if (!file.is_open() || file.eof())
-    {
-        return std::nullopt;
-    }
-
-    std::string line;
-    if (std::getline(file, line))
-    {
-        return parseLine(line);
-    }
-
-    return std::nullopt;
-}
-
 void CsvReader::close()
 {
     if (file.is_open())
@@ -48,25 +32,38 @@ void CsvReader::close()
     }
 }
 
-std::vector<std::string> CsvReader::parseLine(const std::string &line) const
+std::optional<std::vector<std::string_view>> CsvReader::nextRow()
 {
-    std::vector<std::string> result;
-    result.reserve(8);
-    std::string current;
-    current.reserve(32);
-
-    for (char c : line)
+    if (!file.is_open() || file.eof())
     {
-        if (c == ',')
-        {
-            result.push_back(current);
-            current.clear();
-        }
-        else
-        {
-            current += c;
-        }
+        return std::nullopt;
     }
-    result.push_back(current);
+
+    if (std::getline(file, currentLine))
+    {
+        return parseLine(currentLine);
+    }
+
+    return std::nullopt;
+}
+
+std::vector<std::string_view> CsvReader::parseLine(const std::string &line) const
+{
+    std::vector<std::string_view> result;
+    result.reserve(8);
+
+    std::size_t start = 0;
+    while (true)
+    {
+        const std::size_t comma = line.find(',', start);
+        if (comma == std::string::npos)
+        {
+            result.emplace_back(line.data() + start, line.size() - start);
+            break;
+        }
+        result.emplace_back(line.data() + start, comma - start);
+        start = comma + 1;
+    }
+
     return result;
 }
