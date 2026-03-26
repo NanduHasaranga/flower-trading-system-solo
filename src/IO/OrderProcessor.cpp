@@ -1,4 +1,5 @@
 #include "IO/OrderProcessor.hpp"
+#include "Utils/TimeUtils.hpp"
 #include <cstdlib>
 #include <stdexcept>
 
@@ -84,7 +85,7 @@ std::variant<Order, ExecutionReport> OrderProcessor::processRow(const std::vecto
             row.size() > 3 ? row[3] : "",
             "Reject",
             reason,
-            " "  // transactionTime placeholder
+            utils::getCurrentTimestamp()  // transactionTime placeholder
         };
     }
 
