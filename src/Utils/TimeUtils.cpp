@@ -9,6 +9,15 @@ namespace utils
     std::string getCurrentTimestamp()
     {
         auto now = std::chrono::system_clock::now();
+        const auto nowMsEpoch = std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+
+        thread_local long long cachedEpochMs = -1;
+        thread_local std::string cached;
+        if (nowMsEpoch == cachedEpochMs)
+        {
+            return cached;
+        }
+
         auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                       now.time_since_epoch()) %
                   1000;
@@ -30,7 +39,9 @@ namespace utils
             localTime.tm_sec,
             static_cast<int>(ms.count()));
 
-        return std::string(buffer);
+        cachedEpochMs = nowMsEpoch;
+        cached.assign(buffer);
+        return cached;
     }
 
 }

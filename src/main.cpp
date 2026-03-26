@@ -4,14 +4,10 @@
 #include <variant>
 #include <vector>
 
-#include "Core/ExecutionReport.hpp"
-#include "Core/OrderReject.hpp"
 #include "Engine/Exchange.hpp"
 #include "IO/CsvReader.hpp"
 #include "IO/CsvWriter.hpp"
 #include "IO/OrderProcessor.hpp"
-
-using Record = std::variant<ExecutionReport, OrderReject>;
 
 int main()
 {
@@ -36,8 +32,7 @@ int main()
 
         if (auto* order = std::get_if<Order>(&result)) {
             auto& orderBook = exchange.getOrderBook(*order);
-            auto reports = orderBook.processOrder(*order);
-            records.insert(records.end(), std::make_move_iterator(reports.begin()), std::make_move_iterator(reports.end()));
+            orderBook.processOrder(*order, records);
         } else {
             records.push_back(std::get<OrderReject>(result));
         } });
