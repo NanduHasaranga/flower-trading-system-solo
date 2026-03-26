@@ -100,25 +100,25 @@ bool OrderProcessor::validate(const std::string &instrumentText,
 {
     if (!tryParseInstrument(instrumentText, instrument))
     {
-        reason = "Invalid Instrument";
+        reason = "Invalid instrument";
         return false;
     }
 
     if (!tryParseSide(sideText, side))
     {
-        reason = "Invalid Side";
+        reason = "Invalid side";
         return false;
     }
 
     if (!parseIntStrict(quantityText, quantity) || quantity < 10 || quantity > 1000 || quantity % 10 != 0)
     {
-        reason = "Invalid Quantity";
+        reason = "Invalid size";
         return false;
     }
 
     if (!parseDoubleStrict(priceText, price) || price <= 0)
     {
-        reason = "Invalid Price";
+        reason = "Invalid price";
         return false;
     }
 

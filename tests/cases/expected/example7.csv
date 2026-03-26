@@ -1,0 +1,6 @@
+csvOrder ID,Cl. Ord. ID,Instrument,Side,Exec Status,Quantity,Price,Reason
+ord1,aa13,,1,Reject,100,55.00,Invalid instrument
+ord2,aa14,Rose,3,Reject,100,65.00,Invalid side
+ord3,aa15,Lavender,2,Reject,101,1.00,Invalid size
+ord4,aa16,Tulip,1,Reject,100,-1.00,Invalid price
+ord5,aa17,Orchid,1,Reject,1000,-1.00,Invalid price
