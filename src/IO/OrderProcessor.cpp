@@ -1,19 +1,20 @@
 #include "IO/OrderProcessor.hpp"
 #include "Utils/TimeUtils.hpp"
 #include <charconv>
+#include <string_view>
 
 namespace
 {
     struct RawFields
     {
-        std::string clientOrderId;
-        std::string instrument;
-        std::string side;
-        std::string quantity;
-        std::string price;
+        std::string_view clientOrderId;
+        std::string_view instrument;
+        std::string_view side;
+        std::string_view quantity;
+        std::string_view price;
     };
 
-    bool tryParseInstrument(const std::string &text, Instrument &value)
+    bool tryParseInstrument(std::string_view text, Instrument &value)
     {
         if (text == "Rose")
         {
@@ -43,7 +44,7 @@ namespace
         return false;
     }
 
-    bool tryParseSide(const std::string &text, Side &value)
+    bool tryParseSide(std::string_view text, Side &value)
     {
         if (text == "1")
         {
@@ -58,7 +59,7 @@ namespace
         return false;
     }
 
-    bool parseIntStrict(const std::string &text, int &value)
+    bool parseIntStrict(std::string_view text, int &value)
     {
         if (text.empty())
             return false;
@@ -69,7 +70,7 @@ namespace
         return ec == std::errc() && ptr == end;
     }
 
-    bool parseDoubleStrict(const std::string &text, double &value)
+    bool parseDoubleStrict(std::string_view text, double &value)
     {
         if (text.empty())
             return false;
@@ -88,10 +89,10 @@ std::string OrderProcessor::generateOrderID()
     return "ord" + std::to_string(nextOrderId++);
 }
 
-bool OrderProcessor::validate(const std::string &instrumentText,
-                              const std::string &sideText,
-                              const std::string &quantityText,
-                              const std::string &priceText,
+bool OrderProcessor::validate(std::string_view instrumentText,
+                              std::string_view sideText,
+                              std::string_view quantityText,
+                              std::string_view priceText,
                               std::string &reason,
                               Instrument &instrument,
                               Side &side,
@@ -125,11 +126,12 @@ bool OrderProcessor::validate(const std::string &instrumentText,
     return true;
 }
 
-std::variant<Order, ExecutionReport> OrderProcessor::processRow(const std::vector<std::string> &row)
+std::variant<Order, ExecutionReport> OrderProcessor::processRow(const std::vector<std::string_view> &row)
 {
-    auto getField = [&row](std::size_t index) -> std::string
+    auto getField = [&row](std::size_t index) -> std::string_view
     {
-        return index < row.size() ? row[index] : "";
+        static constexpr std::string_view empty{};
+        return index < row.size() ? row[index] : empty;
     };
 
     RawFields raw{
@@ -144,12 +146,12 @@ std::variant<Order, ExecutionReport> OrderProcessor::processRow(const std::vecto
     if (row.size() < 5)
     {
         return ExecutionReport{
-            raw.clientOrderId,
+            std::string(raw.clientOrderId),
             orderId,
-            raw.instrument,
-            raw.side,
-            raw.price,
-            raw.quantity,
+            std::string(raw.instrument),
+            std::string(raw.side),
+            std::string(raw.price),
+            std::string(raw.quantity),
             "Reject",
             "Missing fields",
             utils::getCurrentTimestamp()};
@@ -164,19 +166,19 @@ std::variant<Order, ExecutionReport> OrderProcessor::processRow(const std::vecto
     if (!validate(raw.instrument, raw.side, raw.quantity, raw.price, reason, inst, side, quantity, price))
     {
         return ExecutionReport{
-            raw.clientOrderId,
+            std::string(raw.clientOrderId),
             orderId,
-            raw.instrument,
-            raw.side,
-            raw.price,
-            raw.quantity,
+            std::string(raw.instrument),
+            std::string(raw.side),
+            std::string(raw.price),
+            std::string(raw.quantity),
             "Reject",
             reason,
             utils::getCurrentTimestamp()};
     }
 
     Order order{
-        raw.clientOrderId,
+        std::string(raw.clientOrderId),
         orderId,
         inst,
         side,

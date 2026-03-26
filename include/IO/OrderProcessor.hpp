@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <string_view>
 #include <vector>
 #include <variant>
 #include "Core/Types.hpp"
@@ -11,10 +12,10 @@ class OrderProcessor
 private:
     static long nextOrderId;
     static std::string generateOrderID();
-    static bool validate(const std::string &instrumentText,
-                         const std::string &sideText,
-                         const std::string &quantityText,
-                         const std::string &priceText,
+    static bool validate(std::string_view instrumentText,
+                         std::string_view sideText,
+                         std::string_view quantityText,
+                         std::string_view priceText,
                          std::string &reason,
                          Instrument &instrument,
                          Side &side,
@@ -22,5 +23,5 @@ private:
                          double &price);
 
 public:
-    static std::variant<Order, ExecutionReport> processRow(const std::vector<std::string> &row);
+    static std::variant<Order, ExecutionReport> processRow(const std::vector<std::string_view> &row);
 };
