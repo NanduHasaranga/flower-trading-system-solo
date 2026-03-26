@@ -64,3 +64,6 @@ third_party/
 
 # Output files
 data/
+
+logs/
+scripts/
