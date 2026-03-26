@@ -96,16 +96,15 @@ int main() {
     
     for (int i = 0; i < reports.size(); i++) {
         for (int j = 0; j < reports.at(i).size(); j++) {
-        std::cout << reports.at(i).at(j).clientOrderId << " ";
-        std::cout << reports.at(i).at(j).orderId << " ";
-        //std::cout << to_string(reports.at(i).at(j).side) << " ";
-        std::cout << reports.at(i).at(j).price << " ";
-        std::cout << reports.at(i).at(j).quantity << " ";
-        std::cout << to_string(reports.at(i).at(j).instrument) << " ";
-        std::cout << to_string(reports.at(i).at(j).status) << " ";
-        std::cout << reports.at(i).at(j).reason << " ";
-        //std::cout << to_string(st) << " ";
-        std::cout << std::endl;
+            std::cout << reports.at(i).at(j).orderId << " ";
+            std::cout << reports.at(i).at(j).clientOrderId << " ";
+            std::cout << reports.at(i).at(j).instrument << " ";
+            std::cout << reports.at(i).at(j).side << " ";
+            std::cout << reports.at(i).at(j).status << " ";
+            std::cout << reports.at(i).at(j).quantity << " ";
+            std::cout << reports.at(i).at(j).price << " ";
+            std::cout << reports.at(i).at(j).reason << " ";
+            std::cout << std::endl;
         }
     }
 
