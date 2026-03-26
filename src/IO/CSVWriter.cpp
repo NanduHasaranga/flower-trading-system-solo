@@ -6,15 +6,17 @@
 void CsvWriter::writeRejects(const std::string &path, const std::vector<OrderReject> &rejects)
 {
     std::ofstream file(path);
-    file << "clientOrderId,instrument,side,price,quantity,reason,timestamp\n";
+    file << "Order ID,Client Order ID,Instrument,Side,Exec Status,Quantity,Price,Reason,Transaction Time\n";
 
     for (const auto &r : rejects)
     {
-        file << r.clientOrderId << ","
+        file << r.orderId << ","
+             << r.clientOrderId << ","
              << r.instrument << ","
              << r.side << ","
-             << r.price << ","
+             << static_cast<int>(OrderStatus::Reject) << ","
              << r.quantity << ","
+             << r.price << ","
              << r.reason << ","
              << r.timestamp << "\n";
     }
@@ -65,7 +67,7 @@ void CsvWriter::writeChronological(const std::string &path, const std::vector<Re
             else if constexpr (std::is_same_v<T, OrderReject>)
             {
                 const auto& r = arg;
-                 file << ","
+                 file << r.orderId << ","
                      << r.clientOrderId << ","
                      << r.instrument << ","
                      << r.side << ","

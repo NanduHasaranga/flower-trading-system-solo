@@ -63,6 +63,7 @@ std::variant<Order, OrderReject> OrderProcessor::processRow(const std::vector<st
     if (row.size() < 5)
     {
         return OrderReject{
+            generateOrderID(),
             row.size() > 0 ? row[0] : "",
             row.size() > 1 ? row[1] : "",
             row.size() > 2 ? row[2] : "",
@@ -132,6 +133,7 @@ std::variant<Order, OrderReject> OrderProcessor::processRow(const std::vector<st
     if (!reason.empty())
     {
         return OrderReject{
+            generateOrderID(),
             raw.clientOrderId,
             raw.instrument,
             raw.side,

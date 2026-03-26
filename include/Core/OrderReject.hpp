@@ -6,6 +6,7 @@
 
 struct OrderReject
 {
+    std::string orderId;
     std::string clientOrderId;
     std::string instrument;
     std::string side;
@@ -15,14 +16,16 @@ struct OrderReject
     std::string timestamp;
 
     OrderReject() = default;
-        OrderReject(std::string clientOrderId,
+        OrderReject(std::string orderId,
+                                std::string clientOrderId,
                                 std::string instrument,
                                 std::string side,
                                 std::string price,
                                 std::string quantity,
                                 std::string reason,
                                 std::string timestamp)
-                : clientOrderId(std::move(clientOrderId)),
+                : orderId(std::move(orderId)),
+                    clientOrderId(std::move(clientOrderId)),
                     instrument(std::move(instrument)),
                     side(std::move(side)),
                     price(std::move(price)),
