@@ -9,12 +9,7 @@ int main()
     std::vector<ExecutionReport> records;
     Exchange exchange;
     CsvWriter writer;
-    CsvReader reader;
-
-    if (!reader.open("data/orders.csv"))
-    {
-        return 1;
-    }
+    CsvReader reader("data/orders.csv");
 
     while (auto row = reader.nextRow())
     {
@@ -30,7 +25,6 @@ int main()
             records.push_back(std::get<ExecutionReport>(result));
         }
     }
-
-    reader.close();
     writer.writeExecutions("data/execution.csv", records);
+    return 0;
 }
