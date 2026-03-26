@@ -23,6 +23,7 @@ bool OrderBook::isMatchingOrder(const Order &order)
 void OrderBook::processOrder(Order &order, std::vector<ExecutionReport> &outReports)
 {
     bool isProceed = false;
+    const std::string timestamp = utils::getCurrentTimestamp();
     const std::string orderInstrument = to_string(order.instrument);
     const std::string orderSide = to_string(order.side);
 
@@ -30,7 +31,6 @@ void OrderBook::processOrder(Order &order, std::vector<ExecutionReport> &outRepo
     {
         while (isMatchingOrder(order))
         {
-            const std::string timestamp = utils::getCurrentTimestamp();
             const Order &topOrder = OrderBook::buyingSide.getBestOrder();
             const std::string topInstrument = to_string(topOrder.instrument);
             const std::string topSide = to_string(topOrder.side);
@@ -41,15 +41,15 @@ void OrderBook::processOrder(Order &order, std::vector<ExecutionReport> &outRepo
                 const std::string proceedQuantityText = utils::toString(proceedQuantity);
                 if (order.quantity == topOrder.quantity)
                 {
-                    outReports.emplace_back(order.clientOrderId, order.orderId, orderInstrument, orderSide, topPrice, proceedQuantityText, "Fill", " ", timestamp);
-                    outReports.emplace_back(topOrder.clientOrderId, topOrder.orderId, topInstrument, topSide, topPrice, proceedQuantityText, "Fill", " ", timestamp);
+                    outReports.emplace_back(order.clientOrderId, order.orderId, orderInstrument, orderSide, topPrice, proceedQuantityText, "Fill", "", timestamp);
+                    outReports.emplace_back(topOrder.clientOrderId, topOrder.orderId, topInstrument, topSide, topPrice, proceedQuantityText, "Fill", "", timestamp);
                     OrderBook::buyingSide.removeTopOrder();
                     return;
                 }
                 else
                 {
-                    outReports.emplace_back(order.clientOrderId, order.orderId, orderInstrument, orderSide, topPrice, proceedQuantityText, "PFill", " ", timestamp);
-                    outReports.emplace_back(topOrder.clientOrderId, topOrder.orderId, topInstrument, topSide, topPrice, proceedQuantityText, "Fill", " ", timestamp);
+                    outReports.emplace_back(order.clientOrderId, order.orderId, orderInstrument, orderSide, topPrice, proceedQuantityText, "PFill", "", timestamp);
+                    outReports.emplace_back(topOrder.clientOrderId, topOrder.orderId, topInstrument, topSide, topPrice, proceedQuantityText, "Fill", "", timestamp);
                     order.quantity = order.quantity - proceedQuantity;
                     OrderBook::buyingSide.removeTopOrder();
                     isProceed = true;
@@ -59,14 +59,14 @@ void OrderBook::processOrder(Order &order, std::vector<ExecutionReport> &outRepo
             {
                 int proceedQuantity = order.quantity;
                 const std::string proceedQuantityText = utils::toString(proceedQuantity);
-                outReports.emplace_back(order.clientOrderId, order.orderId, orderInstrument, orderSide, topPrice, proceedQuantityText, "Fill", " ", timestamp);
-                outReports.emplace_back(topOrder.clientOrderId, topOrder.orderId, topInstrument, topSide, topPrice, proceedQuantityText, "PFill", " ", timestamp);
+                outReports.emplace_back(order.clientOrderId, order.orderId, orderInstrument, orderSide, topPrice, proceedQuantityText, "Fill", "", timestamp);
+                outReports.emplace_back(topOrder.clientOrderId, topOrder.orderId, topInstrument, topSide, topPrice, proceedQuantityText, "PFill", "", timestamp);
                 OrderBook::buyingSide.updateTopOrderQuantity(topOrder.quantity - proceedQuantity);
                 return;
             }
         }
         if (!isProceed)
-            outReports.emplace_back(order.clientOrderId, order.orderId, orderInstrument, orderSide, utils::toString(order.price), utils::toString(order.quantity), "New", " ", utils::getCurrentTimestamp());
+            outReports.emplace_back(order.clientOrderId, order.orderId, orderInstrument, orderSide, utils::toString(order.price), utils::toString(order.quantity), "New", "", timestamp);
         OrderBook::sellingSide.insertOrder(order);
         return;
     }
@@ -74,7 +74,6 @@ void OrderBook::processOrder(Order &order, std::vector<ExecutionReport> &outRepo
     { 
         while (isMatchingOrder(order))
         {
-            const std::string timestamp = utils::getCurrentTimestamp();
             const Order &topOrder = OrderBook::sellingSide.getBestOrder();
             const std::string topInstrument = to_string(topOrder.instrument);
             const std::string topSide = to_string(topOrder.side);
@@ -85,15 +84,15 @@ void OrderBook::processOrder(Order &order, std::vector<ExecutionReport> &outRepo
                 const std::string proceedQuantityText = utils::toString(proceedQuantity);
                 if (order.quantity == topOrder.quantity)
                 {
-                    outReports.emplace_back(order.clientOrderId, order.orderId, orderInstrument, orderSide, topPrice, proceedQuantityText, "Fill", " ", timestamp);
-                    outReports.emplace_back(topOrder.clientOrderId, topOrder.orderId, topInstrument, topSide, topPrice, proceedQuantityText, "Fill", " ", timestamp);
+                    outReports.emplace_back(order.clientOrderId, order.orderId, orderInstrument, orderSide, topPrice, proceedQuantityText, "Fill", "", timestamp);
+                    outReports.emplace_back(topOrder.clientOrderId, topOrder.orderId, topInstrument, topSide, topPrice, proceedQuantityText, "Fill", "", timestamp);
                     OrderBook::sellingSide.removeTopOrder();
                     return;
                 }
                 else
                 {
-                    outReports.emplace_back(order.clientOrderId, order.orderId, orderInstrument, orderSide, topPrice, proceedQuantityText, "PFill", " ", timestamp);
-                    outReports.emplace_back(topOrder.clientOrderId, topOrder.orderId, topInstrument, topSide, topPrice, proceedQuantityText, "Fill", " ", timestamp);
+                    outReports.emplace_back(order.clientOrderId, order.orderId, orderInstrument, orderSide, topPrice, proceedQuantityText, "PFill", "", timestamp);
+                    outReports.emplace_back(topOrder.clientOrderId, topOrder.orderId, topInstrument, topSide, topPrice, proceedQuantityText, "Fill", "", timestamp);
                     order.quantity = order.quantity - proceedQuantity;
                     OrderBook::sellingSide.removeTopOrder();
                     isProceed = true;
@@ -103,14 +102,14 @@ void OrderBook::processOrder(Order &order, std::vector<ExecutionReport> &outRepo
             {
                 int proceedQuantity = order.quantity;
                 const std::string proceedQuantityText = utils::toString(proceedQuantity);
-                outReports.emplace_back(order.clientOrderId, order.orderId, orderInstrument, orderSide, topPrice, proceedQuantityText, "Fill", " ", timestamp);
-                outReports.emplace_back(topOrder.clientOrderId, topOrder.orderId, topInstrument, topSide, topPrice, proceedQuantityText, "PFill", " ", timestamp);
+                outReports.emplace_back(order.clientOrderId, order.orderId, orderInstrument, orderSide, topPrice, proceedQuantityText, "Fill", "", timestamp);
+                outReports.emplace_back(topOrder.clientOrderId, topOrder.orderId, topInstrument, topSide, topPrice, proceedQuantityText, "PFill", "", timestamp);
                 OrderBook::sellingSide.updateTopOrderQuantity(topOrder.quantity - proceedQuantity);
                 return;
             }
         }
         if (!isProceed)
-            outReports.emplace_back(order.clientOrderId, order.orderId, orderInstrument, orderSide, utils::toString(order.price), utils::toString(order.quantity), "New", " ", utils::getCurrentTimestamp());
+            outReports.emplace_back(order.clientOrderId, order.orderId, orderInstrument, orderSide, utils::toString(order.price), utils::toString(order.quantity), "New", "", timestamp);
         OrderBook::buyingSide.insertOrder(order);
         return;
     }
