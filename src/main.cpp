@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <iterator>
 #include <variant>
 #include <vector>
 
@@ -36,12 +37,12 @@ int main()
         if (auto* order = std::get_if<Order>(&result)) {
             auto& orderBook = exchange.getOrderBook(*order);
             auto reports = orderBook.processOrder(*order);
-            records.insert(records.end(), reports.begin(), reports.end());
+            records.insert(records.end(), std::make_move_iterator(reports.begin()), std::make_move_iterator(reports.end()));
         } else {
             records.push_back(std::get<OrderReject>(result));
         } });
 
-    writer.writeChronological("data/output.csv", records);
+    writer.writeChronological("data/execution.csv", records);
 
     return 0;
 }

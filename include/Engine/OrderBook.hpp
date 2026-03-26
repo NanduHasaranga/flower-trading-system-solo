@@ -1,10 +1,9 @@
 #ifndef ORDERBOOK_HPP
 #define ORDERBOOK_HPP
 
-#include <vector>
 #include "OrderBookSide.hpp"
-#include "./Core/ExecutionReport.hpp"
 #include "./Core/Types.hpp"
+#include "IO/CsvWriter.hpp"
 
 class OrderBook {
 private:
@@ -13,11 +12,10 @@ private:
     OrderBookSide<BuyComparator> buyingSide;
     OrderBookSide<SellComparator> sellingSide;
     //std::string generateOrderID();
-    bool isMatchingOrder(const Order &order);
 
 public:
     OrderBook() = default;
-    std::vector<ExecutionReport> processOrder(Order &order);
+    void processOrder(Order &order, std::vector<Record> &records);
 };
 
 #endif
