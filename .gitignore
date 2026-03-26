@@ -1,0 +1,20 @@
+# Build
+build/
+out/
+dist/
+
+# Compiled
+*.o
+*.so
+*.a
+*.exe
+exchange_app
+
+# IDE
+.vscode/
+.idea/
+
+
+data/
+logs/
+scripts/
