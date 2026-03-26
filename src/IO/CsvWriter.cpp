@@ -11,8 +11,8 @@ void CsvWriter::writeExecutions(const std::string &path, const std::vector<Execu
     file.rdbuf()->pubsetbuf(ioBuffer.data(), static_cast<std::streamsize>(ioBuffer.size()));
 
     std::string output;
-    output.reserve(64 + rejects.size() * 96);
-    output += "Order ID,Cl. Ord.ID,Instrument,Side,Exec Status,Quantity,Price,reason\n";
+    output.reserve(80 + rejects.size() * 128);
+    output += "Order ID,Cl. Ord.ID,Instrument,Side,Exec Status,Quantity,Price,reason,Transaction Time\n";
 
     for (const auto &r : rejects)
     {
@@ -31,6 +31,8 @@ void CsvWriter::writeExecutions(const std::string &path, const std::vector<Execu
         output += r.price;
         output += ',';
         output += r.reason;
+        output += ',';
+        output += r.transactionTime;
         output += '\n';
     }
 

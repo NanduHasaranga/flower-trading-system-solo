@@ -45,9 +45,9 @@ function Get-NormalizedRows {
     $dataLines = $lines[1..($lines.Count - 1)]
 
     foreach ($line in $dataLines) {
-        $parts = $line.Split(',', 8)
-        if ($parts.Count -lt 8) {
-            $missing = 8 - $parts.Count
+        $parts = $line.Split(',', 9)
+        if ($parts.Count -lt 9) {
+            $missing = 9 - $parts.Count
             for ($i = 0; $i -lt $missing; $i++) {
                 $parts += ""
             }
@@ -77,6 +77,7 @@ function Get-NormalizedRows {
             Quantity      = $quantity
             Price         = [Math]::Round($price, 2)
             Reason        = $parts[7].Trim().ToLowerInvariant()
+            TransactionTime = $parts[8].Trim()
         }
     }
 
@@ -129,6 +130,20 @@ function Compare-Rows {
         }
         if ($expectedRow.Reason -ne $actualRow.Reason) {
             $differences += "Row $($i + 1): Reason expected '$($expectedRow.Reason)' but got '$($actualRow.Reason)'"
+        }
+
+        # Legacy expected fixtures do not include Transaction Time; treat missing expected value as wildcard,
+        # but still require actual output to carry a valid timestamp format.
+        if ([string]::IsNullOrWhiteSpace($expectedRow.TransactionTime)) {
+            if ([string]::IsNullOrWhiteSpace($actualRow.TransactionTime)) {
+                $differences += "Row $($i + 1): TransactionTime is missing in actual output"
+            }
+            elseif ($actualRow.TransactionTime -notmatch '^\d{8}-\d{6}\.\d{3}$') {
+                $differences += "Row $($i + 1): TransactionTime '$($actualRow.TransactionTime)' is not in expected format YYYYMMDD-HHMMSS.mmm"
+            }
+        }
+        elseif ($expectedRow.TransactionTime -ne $actualRow.TransactionTime) {
+            $differences += "Row $($i + 1): TransactionTime expected '$($expectedRow.TransactionTime)' but got '$($actualRow.TransactionTime)'"
         }
     }
 
