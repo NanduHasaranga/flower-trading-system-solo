@@ -126,24 +126,18 @@ bool OrderProcessor::validate(std::string_view instrumentText,
     return true;
 }
 
-std::variant<Order, ExecutionReport> OrderProcessor::processRow(const std::vector<std::string_view> &row)
+std::variant<Order, ExecutionReport> OrderProcessor::processRow(const CsvRow &row)
 {
-    auto getField = [&row](std::size_t index) -> std::string_view
-    {
-        static constexpr std::string_view empty{};
-        return index < row.size() ? row[index] : empty;
-    };
-
     RawFields raw{
-        getField(0),
-        getField(1),
-        getField(2),
-        getField(3),
-        getField(4)};
+        row.fields[0],
+        row.fields[1],
+        row.fields[2],
+        row.fields[3],
+        row.fields[4]};
 
     std::string orderId = generateOrderID();
 
-    if (row.size() < 5)
+    if (row.fieldCount < row.fields.size())
     {
         return ExecutionReport{
             std::string(raw.clientOrderId),

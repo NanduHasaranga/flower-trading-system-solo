@@ -32,7 +32,7 @@ void CsvReader::close()
     }
 }
 
-std::optional<std::vector<std::string_view>> CsvReader::nextRow()
+std::optional<CsvRow> CsvReader::nextRow()
 {
     if (!file.is_open() || file.eof())
     {
@@ -47,10 +47,9 @@ std::optional<std::vector<std::string_view>> CsvReader::nextRow()
     return std::nullopt;
 }
 
-std::vector<std::string_view> CsvReader::parseLine(const std::string &line) const
+CsvRow CsvReader::parseLine(const std::string &line) const
 {
-    std::vector<std::string_view> result;
-    result.reserve(8);
+    CsvRow row{};
 
     std::size_t start = 0;
     while (true)
@@ -58,12 +57,20 @@ std::vector<std::string_view> CsvReader::parseLine(const std::string &line) cons
         const std::size_t comma = line.find(',', start);
         if (comma == std::string::npos)
         {
-            result.emplace_back(line.data() + start, line.size() - start);
+            if (row.fieldCount < row.fields.size())
+            {
+                row.fields[row.fieldCount] = std::string_view(line.data() + start, line.size() - start);
+            }
+            ++row.fieldCount;
             break;
         }
-        result.emplace_back(line.data() + start, comma - start);
+        if (row.fieldCount < row.fields.size())
+        {
+            row.fields[row.fieldCount] = std::string_view(line.data() + start, comma - start);
+        }
+        ++row.fieldCount;
         start = comma + 1;
     }
 
-    return result;
+    return row;
 }

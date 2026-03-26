@@ -1,8 +1,8 @@
 #pragma once
 #include <string>
 #include <string_view>
-#include <vector>
 #include <variant>
+#include "IO/CsvReader.hpp"
 #include "Core/Types.hpp"
 #include "Core/ExecutionReport.hpp"
 #include "Core/Order.hpp"
@@ -23,5 +23,5 @@ private:
                          double &price);
 
 public:
-    static std::variant<Order, ExecutionReport> processRow(const std::vector<std::string_view> &row);
+    static std::variant<Order, ExecutionReport> processRow(const CsvRow &row);
 };
