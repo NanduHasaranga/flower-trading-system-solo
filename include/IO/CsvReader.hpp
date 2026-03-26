@@ -2,6 +2,7 @@
 #define CSVREADER_HPP
 
 #include <string>
+#include <string_view>
 #include <vector>
 #include <fstream>
 #include <optional>
@@ -13,12 +14,13 @@ public:
     explicit CsvReader(const std::string &filepath);
     ~CsvReader() = default;
     bool open(const std::string &filepath);
-    std::optional<std::vector<std::string>> nextRow();
+    std::optional<std::vector<std::string_view>> nextRow();
     void close();
 
 private:
     std::ifstream file;
-    std::vector<std::string> parseLine(const std::string &line) const;
+    std::string currentLine;
+    std::vector<std::string_view> parseLine(const std::string &line) const;
 };
 
 #endif
