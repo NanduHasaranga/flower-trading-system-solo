@@ -1,5 +1,6 @@
 #include "IO/OrderProcessor.hpp"
 #include <string>
+#include <charconv>
 #include "Core/Order.hpp"
 #include "Core/RawOrder.hpp"
 #include "Core/OrderReject.hpp"
@@ -69,7 +70,7 @@ std::variant<Order, OrderReject> OrderProcessor::processRow(const std::vector<st
             row.size() > 2 ? row[2] : "",
             row.size() > 4 ? row[4] : "",
             row.size() > 3 ? row[3] : "",
-            "Missing required field(s)",
+            "Missing fields",
             utils::getCurrentTimestamp()};
     }
 
@@ -84,49 +85,26 @@ std::variant<Order, OrderReject> OrderProcessor::processRow(const std::vector<st
 
     if (!tryInstrument(raw.instrument, inst))
     {
-        reason = "Invalid Instrument";
+        reason = "Invalid instrument";
     }
     else if (!trySide(raw.side, side))
     {
-        reason = "Invalid Side";
+        reason = "Invalid side";
     }
-    else if (raw.price.empty())
+    else if (auto [ptr, ec] = std::from_chars(raw.price.data(),
+                                              raw.price.data() + raw.price.size(),
+                                              price);
+             ec != std::errc() || ptr != raw.price.data() + raw.price.size() || price <= 0.0)
     {
-        reason = "Missing Price";
+        reason = "Invalid price";
     }
-    else
+    else if (auto [ptr, ec] = std::from_chars(raw.quantity.data(),
+                                              raw.quantity.data() + raw.quantity.size(),
+                                              qty);
+             ec != std::errc() || ptr != raw.quantity.data() + raw.quantity.size() ||
+             qty < 10 || qty > 1000 || qty % 10 != 0)
     {
-        try
-        {
-            price = std::stod(raw.price);
-            if (price <= 0.0)
-                reason = "Invalid Price";
-        }
-        catch (...)
-        {
-            reason = "Invalid Price Format";
-        }
-    }
-
-    if (reason.empty())
-    {
-        if (raw.quantity.empty())
-        {
-            reason = "Missing Quantity";
-        }
-        else
-        {
-            try
-            {
-                qty = std::stoi(raw.quantity);
-                if (qty < 10 || qty > 1000 || qty % 10 != 0)
-                    reason = "Invalid Quantity";
-            }
-            catch (...)
-            {
-                reason = "Invalid Quantity Format";
-            }
-        }
+        reason = "Invalid size";
     }
 
     // Decision
