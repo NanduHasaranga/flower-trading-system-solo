@@ -30,6 +30,7 @@ void OrderBook::processOrder(Order &order, std::vector<ExecutionReport> &outRepo
     {
         while (isMatchingOrder(order))
         {
+            const std::string timestamp = utils::getCurrentTimestamp();
             const Order &topOrder = OrderBook::buyingSide.getBestOrder();
             const std::string topInstrument = to_string(topOrder.instrument);
             const std::string topSide = to_string(topOrder.side);
@@ -40,7 +41,6 @@ void OrderBook::processOrder(Order &order, std::vector<ExecutionReport> &outRepo
                 const std::string proceedQuantityText = utils::toString(proceedQuantity);
                 if (order.quantity == topOrder.quantity)
                 {
-                    const std::string timestamp = utils::getCurrentTimestamp();
                     outReports.emplace_back(order.clientOrderId, order.orderId, orderInstrument, orderSide, topPrice, proceedQuantityText, "Fill", " ", timestamp);
                     outReports.emplace_back(topOrder.clientOrderId, topOrder.orderId, topInstrument, topSide, topPrice, proceedQuantityText, "Fill", " ", timestamp);
                     OrderBook::buyingSide.removeTopOrder();
@@ -48,7 +48,6 @@ void OrderBook::processOrder(Order &order, std::vector<ExecutionReport> &outRepo
                 }
                 else
                 {
-                    const std::string timestamp = utils::getCurrentTimestamp();
                     outReports.emplace_back(order.clientOrderId, order.orderId, orderInstrument, orderSide, topPrice, proceedQuantityText, "PFill", " ", timestamp);
                     outReports.emplace_back(topOrder.clientOrderId, topOrder.orderId, topInstrument, topSide, topPrice, proceedQuantityText, "Fill", " ", timestamp);
                     order.quantity = order.quantity - proceedQuantity;
@@ -60,7 +59,6 @@ void OrderBook::processOrder(Order &order, std::vector<ExecutionReport> &outRepo
             {
                 int proceedQuantity = order.quantity;
                 const std::string proceedQuantityText = utils::toString(proceedQuantity);
-                const std::string timestamp = utils::getCurrentTimestamp();
                 outReports.emplace_back(order.clientOrderId, order.orderId, orderInstrument, orderSide, topPrice, proceedQuantityText, "Fill", " ", timestamp);
                 outReports.emplace_back(topOrder.clientOrderId, topOrder.orderId, topInstrument, topSide, topPrice, proceedQuantityText, "PFill", " ", timestamp);
                 OrderBook::buyingSide.updateTopOrderQuantity(topOrder.quantity - proceedQuantity);
@@ -73,9 +71,10 @@ void OrderBook::processOrder(Order &order, std::vector<ExecutionReport> &outRepo
         return;
     }
     else
-    {
+    { 
         while (isMatchingOrder(order))
         {
+            const std::string timestamp = utils::getCurrentTimestamp();
             const Order &topOrder = OrderBook::sellingSide.getBestOrder();
             const std::string topInstrument = to_string(topOrder.instrument);
             const std::string topSide = to_string(topOrder.side);
@@ -86,7 +85,6 @@ void OrderBook::processOrder(Order &order, std::vector<ExecutionReport> &outRepo
                 const std::string proceedQuantityText = utils::toString(proceedQuantity);
                 if (order.quantity == topOrder.quantity)
                 {
-                    const std::string timestamp = utils::getCurrentTimestamp();
                     outReports.emplace_back(order.clientOrderId, order.orderId, orderInstrument, orderSide, topPrice, proceedQuantityText, "Fill", " ", timestamp);
                     outReports.emplace_back(topOrder.clientOrderId, topOrder.orderId, topInstrument, topSide, topPrice, proceedQuantityText, "Fill", " ", timestamp);
                     OrderBook::sellingSide.removeTopOrder();
@@ -94,7 +92,6 @@ void OrderBook::processOrder(Order &order, std::vector<ExecutionReport> &outRepo
                 }
                 else
                 {
-                    const std::string timestamp = utils::getCurrentTimestamp();
                     outReports.emplace_back(order.clientOrderId, order.orderId, orderInstrument, orderSide, topPrice, proceedQuantityText, "PFill", " ", timestamp);
                     outReports.emplace_back(topOrder.clientOrderId, topOrder.orderId, topInstrument, topSide, topPrice, proceedQuantityText, "Fill", " ", timestamp);
                     order.quantity = order.quantity - proceedQuantity;
@@ -106,7 +103,6 @@ void OrderBook::processOrder(Order &order, std::vector<ExecutionReport> &outRepo
             {
                 int proceedQuantity = order.quantity;
                 const std::string proceedQuantityText = utils::toString(proceedQuantity);
-                const std::string timestamp = utils::getCurrentTimestamp();
                 outReports.emplace_back(order.clientOrderId, order.orderId, orderInstrument, orderSide, topPrice, proceedQuantityText, "Fill", " ", timestamp);
                 outReports.emplace_back(topOrder.clientOrderId, topOrder.orderId, topInstrument, topSide, topPrice, proceedQuantityText, "PFill", " ", timestamp);
                 OrderBook::sellingSide.updateTopOrderQuantity(topOrder.quantity - proceedQuantity);
