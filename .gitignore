@@ -62,6 +62,5 @@ dependencies/
 vendor/
 third_party/
 
-# Output files (if not tracking)
-# Uncomment if you want to exclude data files
-# data/output.csv
+# Output files
+data/
