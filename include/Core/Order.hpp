@@ -4,7 +4,8 @@
 #include <string>
 #include "Types.hpp"
 
-struct Order {
+struct Order
+{
     std::string clientOrderId;
     std::string orderId;
     Instrument instrument;
