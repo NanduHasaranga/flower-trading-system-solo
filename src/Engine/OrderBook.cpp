@@ -28,25 +28,28 @@ std::vector<ExecutionReport> OrderBook::processOrder(Order &order) {
 
     if(order.side == Side::Sell) {    
         while(isMatchingOrder(order)) {        
-            Order topOrder = OrderBook::buyingSide.getBestOrder();
+            const Order &topOrder = OrderBook::buyingSide.getBestOrder();
             if(order.quantity >= topOrder.quantity) {
                 int proceedQuantity = topOrder.quantity;
                 if(order.quantity == topOrder.quantity){
-                    reports.push_back(ExecutionReport(order.clientOrderId, order.orderId, to_string(order.instrument), to_string(order.side), utils::toString(topOrder.price), utils::toString(proceedQuantity), "Fill" , " ", utils::getCurrentTimestamp()));
-                    reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.orderId, to_string(topOrder.instrument), to_string(topOrder.side), utils::toString(topOrder.price), utils::toString(proceedQuantity), "Fill", " ", utils::getCurrentTimestamp()));
+                    const std::string timestamp = utils::getCurrentTimestamp();
+                    reports.push_back(ExecutionReport(order.clientOrderId, order.orderId, to_string(order.instrument), to_string(order.side), utils::toString(topOrder.price), utils::toString(proceedQuantity), "Fill" , " ", timestamp));
+                    reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.orderId, to_string(topOrder.instrument), to_string(topOrder.side), utils::toString(topOrder.price), utils::toString(proceedQuantity), "Fill", " ", timestamp));
                     OrderBook::buyingSide.removeTopOrder();
                     return reports;
                 }else {
-                    reports.push_back(ExecutionReport(order.clientOrderId, order.orderId, to_string(order.instrument), to_string(order.side), utils::toString(topOrder.price), utils::toString(proceedQuantity), "PFill", " ", utils::getCurrentTimestamp()));
-                    reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.orderId, to_string(topOrder.instrument), to_string(topOrder.side), utils::toString(topOrder.price), utils::toString(proceedQuantity), "Fill", " ", utils::getCurrentTimestamp()));
+                    const std::string timestamp = utils::getCurrentTimestamp();
+                    reports.push_back(ExecutionReport(order.clientOrderId, order.orderId, to_string(order.instrument), to_string(order.side), utils::toString(topOrder.price), utils::toString(proceedQuantity), "PFill", " ", timestamp));
+                    reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.orderId, to_string(topOrder.instrument), to_string(topOrder.side), utils::toString(topOrder.price), utils::toString(proceedQuantity), "Fill", " ", timestamp));
                     order.quantity = order.quantity - proceedQuantity;
                     OrderBook::buyingSide.removeTopOrder();
                     isProceed = true;
                 }
             }else {
                 int proceedQuantity = order.quantity;
-                reports.push_back(ExecutionReport(order.clientOrderId, order.orderId, to_string(order.instrument), to_string(order.side), utils::toString(topOrder.price), utils::toString(proceedQuantity), "Fill", " ", utils::getCurrentTimestamp()));
-                reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.orderId, to_string(topOrder.instrument), to_string(topOrder.side), utils::toString(topOrder.price), utils::toString(proceedQuantity), "PFill", " ", utils::getCurrentTimestamp()));
+                const std::string timestamp = utils::getCurrentTimestamp();
+                reports.push_back(ExecutionReport(order.clientOrderId, order.orderId, to_string(order.instrument), to_string(order.side), utils::toString(topOrder.price), utils::toString(proceedQuantity), "Fill", " ", timestamp));
+                reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.orderId, to_string(topOrder.instrument), to_string(topOrder.side), utils::toString(topOrder.price), utils::toString(proceedQuantity), "PFill", " ", timestamp));
                 OrderBook::buyingSide.updateTopOrderQuantity(topOrder.quantity - proceedQuantity);
                 return reports;
             }
@@ -57,25 +60,28 @@ std::vector<ExecutionReport> OrderBook::processOrder(Order &order) {
         return reports;
     }else {
         while(isMatchingOrder(order)) {
-             Order topOrder = OrderBook::sellingSide.getBestOrder();
+             const Order &topOrder = OrderBook::sellingSide.getBestOrder();
              if(order.quantity >= topOrder.quantity) {
                 int proceedQuantity = topOrder.quantity;
                 if(order.quantity == topOrder.quantity){
-                    reports.push_back(ExecutionReport(order.clientOrderId, order.orderId, to_string(order.instrument), to_string(order.side), utils::toString(topOrder.price), utils::toString(proceedQuantity), "Fill" , " ", utils::getCurrentTimestamp()));
-                    reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.orderId, to_string(topOrder.instrument), to_string(topOrder.side), utils::toString(topOrder.price), utils::toString(proceedQuantity), "Fill", " ", utils::getCurrentTimestamp()));
+                    const std::string timestamp = utils::getCurrentTimestamp();
+                    reports.push_back(ExecutionReport(order.clientOrderId, order.orderId, to_string(order.instrument), to_string(order.side), utils::toString(topOrder.price), utils::toString(proceedQuantity), "Fill" , " ", timestamp));
+                    reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.orderId, to_string(topOrder.instrument), to_string(topOrder.side), utils::toString(topOrder.price), utils::toString(proceedQuantity), "Fill", " ", timestamp));
                     OrderBook::sellingSide.removeTopOrder();
                     return reports;
                 }else {
-                    reports.push_back(ExecutionReport(order.clientOrderId, order.orderId, to_string(order.instrument), to_string(order.side), utils::toString(topOrder.price), utils::toString(proceedQuantity), "PFill", " ", utils::getCurrentTimestamp()));
-                     reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.orderId, to_string(topOrder.instrument), to_string(topOrder.side), utils::toString(topOrder.price), utils::toString(proceedQuantity), "Fill", " ", utils::getCurrentTimestamp()));
-                     order.quantity = order.quantity - proceedQuantity;
-                     OrderBook::sellingSide.removeTopOrder();
-                     isProceed = true;
+                    const std::string timestamp = utils::getCurrentTimestamp();
+                    reports.push_back(ExecutionReport(order.clientOrderId, order.orderId, to_string(order.instrument), to_string(order.side), utils::toString(topOrder.price), utils::toString(proceedQuantity), "PFill", " ", timestamp));
+                    reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.orderId, to_string(topOrder.instrument), to_string(topOrder.side), utils::toString(topOrder.price), utils::toString(proceedQuantity), "Fill", " ", timestamp));
+                    order.quantity = order.quantity - proceedQuantity;
+                    OrderBook::sellingSide.removeTopOrder();
+                    isProceed = true;
                 }
             }else {
                 int proceedQuantity = order.quantity;
-                reports.push_back(ExecutionReport(order.clientOrderId, order.orderId, to_string(order.instrument), to_string(order.side), utils::toString(topOrder.price), utils::toString(proceedQuantity), "Fill", " ", utils::getCurrentTimestamp()));
-                reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.orderId, to_string(topOrder.instrument), to_string(topOrder.side), utils::toString(topOrder.price), utils::toString(proceedQuantity), "PFill", " ", utils::getCurrentTimestamp()));
+                const std::string timestamp = utils::getCurrentTimestamp();
+                reports.push_back(ExecutionReport(order.clientOrderId, order.orderId, to_string(order.instrument), to_string(order.side), utils::toString(topOrder.price), utils::toString(proceedQuantity), "Fill", " ", timestamp));
+                reports.push_back(ExecutionReport(topOrder.clientOrderId, topOrder.orderId, to_string(topOrder.instrument), to_string(topOrder.side), utils::toString(topOrder.price), utils::toString(proceedQuantity), "PFill", " ", timestamp));
                 OrderBook::sellingSide.updateTopOrderQuantity(topOrder.quantity - proceedQuantity);
                 return reports;
             }
