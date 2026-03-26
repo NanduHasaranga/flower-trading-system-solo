@@ -2,6 +2,7 @@
 #include "Engine\Exchange.hpp"
 #include "IO\CsvReader.hpp"
 #include "IO\OrderProcessor.hpp"
+#include "IO\CsvWriter.hpp"
 #include <fstream>
 
 int main() {
@@ -54,13 +55,13 @@ int main() {
    // std::vector<std::string> row1 = {"aa14", "Rose", "2", "100", "56.00"};
 
 
-    std::vector<std::vector<ExecutionReport>> reports;
-    Exchange exchange = Exchange();
-
-    std::ifstream file("data/orders.csv");
+    std::vector<ExecutionReport> records;
+    Exchange exchange;
+    CsvWriter writer;
     CsvReader reader;
 
-     
+    std::ifstream file("data/orders.csv");
+
     std::string line;
 
     // Skip header
@@ -82,30 +83,30 @@ int main() {
             
             auto& orderBook = exchange.getOrderBook(ord);
             report = orderBook.processOrder(ord);
-            reports.push_back(report);
+            for (const auto& r : report)
+            {
+                records.push_back(r);
+            }
 
             std::cout << "Valid order: " << ord.orderId << " Price: " << ord.price << "\n";
         } else {
-            auto report = std::get<ExecutionReport>(result);
-            std::vector<ExecutionReport> rep;
-            rep.push_back(report);
-            reports.push_back(rep);
-            std::cout << "Rejected order: " << report.orderId << " Reason: " << report.reason << "\n";
+            records.push_back(std::get<ExecutionReport>(result));
+            //std::cout << "Rejected order: " << report.orderId << " Reason: " << report.reason << "\n";
         }  
     }
     
-    for (int i = 0; i < reports.size(); i++) {
-        for (int j = 0; j < reports.at(i).size(); j++) {
-            std::cout << reports.at(i).at(j).orderId << " ";
-            std::cout << reports.at(i).at(j).clientOrderId << " ";
-            std::cout << reports.at(i).at(j).instrument << " ";
-            std::cout << reports.at(i).at(j).side << " ";
-            std::cout << reports.at(i).at(j).status << " ";
-            std::cout << reports.at(i).at(j).quantity << " ";
-            std::cout << reports.at(i).at(j).price << " ";
-            std::cout << reports.at(i).at(j).reason << " ";
+    for (int i = 0; i < records.size(); i++) {
+            std::cout << records.at(i).orderId << " ";
+            std::cout << records.at(i).clientOrderId << " ";
+            std::cout << records.at(i).instrument << " ";
+            std::cout << records.at(i).side << " ";
+            std::cout << records.at(i).status << " ";
+            std::cout << records.at(i).quantity << " ";
+            std::cout << records.at(i).price << " ";
+            std::cout << records.at(i).reason << " ";
             std::cout << std::endl;
-        }
     }
+
+    writer.writeExecutions("data/execution.csv", records);
 
 }
