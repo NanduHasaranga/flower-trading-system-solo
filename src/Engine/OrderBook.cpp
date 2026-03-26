@@ -4,25 +4,20 @@
 
 bool OrderBook::isMatchingOrder(const Order &order)
 {
+    if (order.side == Side::Sell)
+    {
+        if (OrderBook::buyingSide.isEmpty())
+        {
+            return false;
+        }
+        return OrderBook::buyingSide.getBestOrder().price >= order.price;
+    }
 
-    if (order.side == Side::Sell && !OrderBook::buyingSide.isEmpty() && OrderBook::buyingSide.getBestOrder().price >= order.price && order.quantity > 0)
+    if (OrderBook::sellingSide.isEmpty())
     {
-        return true;
-    }
-    else if (order.side == Side::Buy && !OrderBook::sellingSide.isEmpty() && OrderBook::sellingSide.getBestOrder().price <= order.price && order.quantity > 0)
-    {
-        return true;
-    }
-    else
         return false;
-}
-
-std::vector<ExecutionReport> OrderBook::processOrder(Order &order)
-{
-    std::vector<ExecutionReport> reports;
-    reports.reserve(2);
-    processOrder(order, reports);
-    return reports;
+    }
+    return OrderBook::sellingSide.getBestOrder().price <= order.price;
 }
 
 void OrderBook::processOrder(Order &order, std::vector<ExecutionReport> &outReports)
