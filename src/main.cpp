@@ -3,7 +3,6 @@
 #include "IO\CsvReader.hpp"
 #include "IO\OrderProcessor.hpp"
 #include "IO\CsvWriter.hpp"
-#include <fstream>
 
 int main()
 {
@@ -12,30 +11,19 @@ int main()
     CsvWriter writer;
     CsvReader reader;
 
-    std::ifstream file("data/orders.csv");
-    if (!file.is_open())
+    if (!reader.open("data/orders.csv"))
     {
-        std::cerr << "Failed to open data/orders.csv\n";
         return 1;
     }
 
-    std::string line;
-    std::getline(file, line);
-
-    while (std::getline(file, line))
+    while (auto row = reader.nextRow())
     {
-        auto row = reader.parseLine(line);
-        if (row.empty())
-            continue;
-
-        auto result = OrderProcessor::processRow(row);
+        auto result = OrderProcessor::processRow(*row);
 
         if (auto *order = std::get_if<Order>(&result))
         {
             auto &orderBook = exchange.getOrderBook(*order);
-            auto reports = orderBook.processOrder(*order);
-
-            records.insert(records.end(), reports.begin(), reports.end());
+            orderBook.processOrder(*order, records);
         }
         else
         {
@@ -43,5 +31,6 @@ int main()
         }
     }
 
+    reader.close();
     writer.writeExecutions("data/execution.csv", records);
 }
