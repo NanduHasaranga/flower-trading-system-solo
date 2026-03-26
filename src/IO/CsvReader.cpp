@@ -1,5 +1,14 @@
 #include "IO/CsvReader.hpp"
 #include <iostream>
+#include <stdexcept>
+
+CsvReader::CsvReader(const std::string &filepath)
+{
+    if (!open(filepath))
+    {
+        throw std::runtime_error("Failed to open " + filepath);
+    }
+}
 
 bool CsvReader::open(const std::string &filepath)
 {

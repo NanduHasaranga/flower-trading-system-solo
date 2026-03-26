@@ -9,6 +9,9 @@
 class CsvReader
 {
 public:
+    CsvReader() = default;
+    explicit CsvReader(const std::string &filepath);
+    ~CsvReader() = default;
     bool open(const std::string &filepath);
     std::optional<std::vector<std::string>> nextRow();
     void close();
