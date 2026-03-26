@@ -1,9 +1,11 @@
-#ifndef TIME_UTILS_HPP
-#define TIME_UTILS_HPP
+#ifndef TIMEUTILS_HPP
+#define TIMEUTILS_HPP
 
 #include <string>
 
-namespace utils {
+namespace utils
+{
+    // YYYYMMDD-HHMMSS.000 format
     std::string getCurrentTimestamp();
 }
 
