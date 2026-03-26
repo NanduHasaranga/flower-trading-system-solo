@@ -1,15 +1,19 @@
 #include "IO/CsvReader.hpp"
+#include <algorithm>
 
 std::vector<std::string> CsvReader::parseLine(const std::string &line) const
 {
     std::vector<std::string> result;
+    result.reserve(static_cast<std::size_t>(std::count(line.begin(), line.end(), ',')) + 1);
+
     std::string current;
+    current.reserve(line.size());
 
     for (char c : line)
     {
         if (c == ',')
         {
-            result.push_back(current);
+            result.emplace_back(std::move(current));
             current.clear();
         }
         else
@@ -17,18 +21,6 @@ std::vector<std::string> CsvReader::parseLine(const std::string &line) const
             current += c;
         }
     }
-    result.push_back(current);
+    result.emplace_back(std::move(current));
     return result;
-}
-
-void CsvReader::parseFile(std::ifstream &file, RowCallback callback) const
-{
-    std::string line;
-    std::getline(file, line);
-    while (std::getline(file, line))
-    {
-        if (line.empty())
-            continue;
-        callback(parseLine(line));
-    }
 }
