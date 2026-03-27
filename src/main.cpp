@@ -1,5 +1,4 @@
 #include <iostream>
-#include <algorithm>
 #include <vector>
 #include <variant>
 #include "Engine\Exchange.hpp"
@@ -17,15 +16,7 @@ int main()
 
     while (auto row = reader.nextRow())
     {
-        std::vector<std::string> fields;
-        const std::size_t bound = std::min(row->fieldCount, row->fields.size());
-        fields.reserve(bound);
-        for (std::size_t i = 0; i < bound; ++i)
-        {
-            fields.emplace_back(row->fields[i]);
-        }
-
-        auto result = OrderProcessor::processRow(fields);
+        auto result = OrderProcessor::processRow(*row);
 
         if (auto *order = std::get_if<Order>(&result))
         {

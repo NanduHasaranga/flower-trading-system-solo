@@ -5,6 +5,8 @@
 #include "Core/Order.hpp"
 #include "Core/OrderReject.hpp"
 
+struct CsvRow;
+
 class OrderProcessor
 {
 private:
@@ -12,5 +14,5 @@ private:
     static std::string generateOrderID();
 
 public:
-    static std::variant<Order, OrderReject> processRow(const std::vector<std::string> &row);
+    static std::variant<Order, OrderReject> processRow(const CsvRow &row);
 };
