@@ -2,8 +2,10 @@
 #define ORDERBOOK_HPP
 
 #include <vector>
+#include <variant>
 #include "OrderBookSide.hpp"
 #include "./Core/ExecutionReport.hpp"
+#include "./Core/OrderReject.hpp"
 #include "./Core/Types.hpp"
 
 class OrderBook
@@ -16,7 +18,7 @@ private:
 
 public:
     OrderBook() = default;
-    void processOrder(Order &order, std::vector<ExecutionReport> &outReports);
+    void processOrder(Order &order, std::vector<std::variant<ExecutionReport, OrderReject>> &outReports);
 };
 
 #endif

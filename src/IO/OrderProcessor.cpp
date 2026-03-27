@@ -1,86 +1,10 @@
 #include "IO/OrderProcessor.hpp"
-#include "Utils/TimeUtils.hpp"
+#include <string>
 #include <charconv>
-#include <string_view>
-
-namespace
-{
-    struct RawFields
-    {
-        std::string_view clientOrderId;
-        std::string_view instrument;
-        std::string_view side;
-        std::string_view quantity;
-        std::string_view price;
-    };
-
-    bool tryParseInstrument(std::string_view text, Instrument &value)
-    {
-        if (text == "Rose")
-        {
-            value = Instrument::Rose;
-            return true;
-        }
-        if (text == "Lavender")
-        {
-            value = Instrument::Lavender;
-            return true;
-        }
-        if (text == "Lotus")
-        {
-            value = Instrument::Lotus;
-            return true;
-        }
-        if (text == "Tulip")
-        {
-            value = Instrument::Tulip;
-            return true;
-        }
-        if (text == "Orchid")
-        {
-            value = Instrument::Orchid;
-            return true;
-        }
-        return false;
-    }
-
-    bool tryParseSide(std::string_view text, Side &value)
-    {
-        if (text == "1")
-        {
-            value = Side::Buy;
-            return true;
-        }
-        if (text == "2")
-        {
-            value = Side::Sell;
-            return true;
-        }
-        return false;
-    }
-
-    bool parseIntStrict(std::string_view text, int &value)
-    {
-        if (text.empty())
-            return false;
-
-        const char *begin = text.data();
-        const char *end = begin + text.size();
-        auto [ptr, ec] = std::from_chars(begin, end, value);
-        return ec == std::errc() && ptr == end;
-    }
-
-    bool parseDoubleStrict(std::string_view text, double &value)
-    {
-        if (text.empty())
-            return false;
-
-        const char *begin = text.data();
-        const char *end = begin + text.size();
-        auto [ptr, ec] = std::from_chars(begin, end, value);
-        return ec == std::errc() && ptr == end;
-    }
-}
+#include "Core/Order.hpp"
+#include "Core/RawOrder.hpp"
+#include "Core/OrderReject.hpp"
+#include "Utils/TimeUtils.hpp"
 
 long OrderProcessor::nextOrderId = 1;
 
@@ -89,94 +13,120 @@ std::string OrderProcessor::generateOrderID()
     return "ord" + std::to_string(nextOrderId++);
 }
 
-bool OrderProcessor::validate(std::string_view instrumentText,
-                              std::string_view sideText,
-                              std::string_view quantityText,
-                              std::string_view priceText,
-                              std::string &reason,
-                              Instrument &instrument,
-                              Side &side,
-                              int &quantity,
-                              double &price)
+static bool tryInstrument(const std::string &str, Instrument &out)
 {
-    if (!tryParseInstrument(instrumentText, instrument))
+    if (str == "Rose")
     {
-        reason = "Invalid instrument";
-        return false;
+        out = Instrument::Rose;
+        return true;
     }
-
-    if (!tryParseSide(sideText, side))
+    if (str == "Lavender")
     {
-        reason = "Invalid side";
-        return false;
+        out = Instrument::Lavender;
+        return true;
     }
-
-    if (!parseIntStrict(quantityText, quantity) || quantity < 10 || quantity > 1000 || quantity % 10 != 0)
+    if (str == "Lotus")
     {
-        reason = "Invalid size";
-        return false;
+        out = Instrument::Lotus;
+        return true;
     }
-
-    if (!parseDoubleStrict(priceText, price) || price <= 0)
+    if (str == "Tulip")
     {
-        reason = "Invalid price";
-        return false;
+        out = Instrument::Tulip;
+        return true;
     }
-
-    return true;
+    if (str == "Orchid")
+    {
+        out = Instrument::Orchid;
+        return true;
+    }
+    return false;
 }
 
-std::variant<Order, ExecutionReport> OrderProcessor::processRow(const CsvRow &row)
+static bool trySide(const std::string &str, Side &out)
 {
-    RawFields raw{
-        row.fields[0],
-        row.fields[1],
-        row.fields[2],
-        row.fields[3],
-        row.fields[4]};
-
-    std::string orderId = generateOrderID();
-
-    if (row.fieldCount < row.fields.size())
+    if (str == "1")
     {
-        return ExecutionReport{
-            std::string(raw.clientOrderId),
-            orderId,
-            std::string(raw.instrument),
-            std::string(raw.side),
-            std::string(raw.price),
-            std::string(raw.quantity),
-            "Reject",
+        out = Side::Buy;
+        return true;
+    }
+    if (str == "2")
+    {
+        out = Side::Sell;
+        return true;
+    }
+    return false;
+}
+
+std::variant<Order, OrderReject> OrderProcessor::processRow(const std::vector<std::string> &row)
+{
+    // Ingest
+    if (row.size() < 5)
+    {
+        return OrderReject{
+            generateOrderID(),
+            row.size() > 0 ? row[0] : "",
+            row.size() > 1 ? row[1] : "",
+            row.size() > 2 ? row[2] : "",
+            row.size() > 4 ? row[4] : "",
+            row.size() > 3 ? row[3] : "",
             "Missing fields",
             utils::getCurrentTimestamp()};
     }
 
-    Instrument inst = Instrument::Rose;
-    Side side = Side::Buy;
-    int quantity = 0;
-    double price = 0.0;
-    std::string reason;
+    RawOrder raw{row[0], row[1], row[2], row[4], row[3]};
 
-    if (!validate(raw.instrument, raw.side, raw.quantity, raw.price, reason, inst, side, quantity, price))
+    // Validation
+    std::string reason;
+    Instrument inst;
+    Side side;
+    double price = 0.0;
+    int qty = 0;
+
+    if (!tryInstrument(raw.instrument, inst))
     {
-        return ExecutionReport{
-            std::string(raw.clientOrderId),
-            orderId,
-            std::string(raw.instrument),
-            std::string(raw.side),
-            std::string(raw.price),
-            std::string(raw.quantity),
-            "Reject",
+        reason = "Invalid instrument";
+    }
+    else if (!trySide(raw.side, side))
+    {
+        reason = "Invalid side";
+    }
+    else if (auto [ptr, ec] = std::from_chars(raw.price.data(),
+                                              raw.price.data() + raw.price.size(),
+                                              price);
+             ec != std::errc() || ptr != raw.price.data() + raw.price.size() || price <= 0.0)
+    {
+        reason = "Invalid price";
+    }
+    else if (auto [ptr, ec] = std::from_chars(raw.quantity.data(),
+                                              raw.quantity.data() + raw.quantity.size(),
+                                              qty);
+             ec != std::errc() || ptr != raw.quantity.data() + raw.quantity.size() ||
+             qty < 10 || qty > 1000 || qty % 10 != 0)
+    {
+        reason = "Invalid size";
+    }
+
+    // Decision
+    if (!reason.empty())
+    {
+        return OrderReject{
+            generateOrderID(),
+            raw.clientOrderId,
+            raw.instrument,
+            raw.side,
+            raw.price,
+            raw.quantity,
             reason,
             utils::getCurrentTimestamp()};
     }
 
-    Order order{
-        std::string(raw.clientOrderId),
-        orderId,
+    // Create Order with validated values
+    return Order{
+        raw.clientOrderId,
+        generateOrderID(),
         inst,
         side,
         price,
-        quantity};
-    return order;
+        qty};
 }
