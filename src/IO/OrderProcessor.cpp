@@ -1,9 +1,10 @@
 #include "IO/OrderProcessor.hpp"
 #include <string>
+#include <string_view>
 #include <charconv>
 #include "Core/Order.hpp"
-#include "Core/RawOrder.hpp"
 #include "Core/OrderReject.hpp"
+#include "IO/CsvReader.hpp"
 #include "Utils/TimeUtils.hpp"
 
 long OrderProcessor::nextOrderId = 1;
@@ -13,29 +14,29 @@ std::string OrderProcessor::generateOrderID()
     return "ord" + std::to_string(nextOrderId++);
 }
 
-static bool tryInstrument(const std::string &str, Instrument &out)
+static bool tryInstrument(std::string_view value, Instrument &out)
 {
-    if (str == "Rose")
+    if (value == "Rose")
     {
         out = Instrument::Rose;
         return true;
     }
-    if (str == "Lavender")
+    if (value == "Lavender")
     {
         out = Instrument::Lavender;
         return true;
     }
-    if (str == "Lotus")
+    if (value == "Lotus")
     {
         out = Instrument::Lotus;
         return true;
     }
-    if (str == "Tulip")
+    if (value == "Tulip")
     {
         out = Instrument::Tulip;
         return true;
     }
-    if (str == "Orchid")
+    if (value == "Orchid")
     {
         out = Instrument::Orchid;
         return true;
@@ -43,14 +44,18 @@ static bool tryInstrument(const std::string &str, Instrument &out)
     return false;
 }
 
-static bool trySide(const std::string &str, Side &out)
+static bool trySide(std::string_view value, Side &out)
 {
-    if (str == "1")
+    if (value.size() != 1)
+    {
+        return false;
+    }
+    if (value[0] == '1')
     {
         out = Side::Buy;
         return true;
     }
-    if (str == "2")
+    if (value[0] == '2')
     {
         out = Side::Sell;
         return true;
@@ -58,23 +63,42 @@ static bool trySide(const std::string &str, Side &out)
     return false;
 }
 
-std::variant<Order, OrderReject> OrderProcessor::processRow(const std::vector<std::string> &row)
+static std::string_view fieldAt(const CsvRow &row, std::size_t index)
+{
+    if (index < row.fieldCount && index < row.fields.size())
+    {
+        return row.fields[index];
+    }
+    return {};
+}
+
+std::variant<Order, OrderReject> OrderProcessor::processRow(const CsvRow &row)
 {
     // Ingest
-    if (row.size() < 5)
+    if (row.fieldCount < 5)
     {
+        const std::string_view clientOrderId = fieldAt(row, 0);
+        const std::string_view instrument = fieldAt(row, 1);
+        const std::string_view side = fieldAt(row, 2);
+        const std::string_view quantity = fieldAt(row, 3);
+        const std::string_view price = fieldAt(row, 4);
+
         return OrderReject{
             generateOrderID(),
-            row.size() > 0 ? row[0] : "",
-            row.size() > 1 ? row[1] : "",
-            row.size() > 2 ? row[2] : "",
-            row.size() > 4 ? row[4] : "",
-            row.size() > 3 ? row[3] : "",
+            std::string(clientOrderId),
+            std::string(instrument),
+            std::string(side),
+            std::string(price),
+            std::string(quantity),
             "Missing fields",
             utils::getCurrentTimestamp()};
     }
 
-    RawOrder raw{row[0], row[1], row[2], row[4], row[3]};
+    const std::string_view clientOrderId = row.fields[0];
+    const std::string_view instrumentField = row.fields[1];
+    const std::string_view sideField = row.fields[2];
+    const std::string_view quantityField = row.fields[3];
+    const std::string_view priceField = row.fields[4];
 
     // Validation
     std::string reason;
@@ -83,25 +107,25 @@ std::variant<Order, OrderReject> OrderProcessor::processRow(const std::vector<st
     double price = 0.0;
     int qty = 0;
 
-    if (!tryInstrument(raw.instrument, inst))
+    if (!tryInstrument(instrumentField, inst))
     {
         reason = "Invalid instrument";
     }
-    else if (!trySide(raw.side, side))
+    else if (!trySide(sideField, side))
     {
         reason = "Invalid side";
     }
-    else if (auto [ptr, ec] = std::from_chars(raw.price.data(),
-                                              raw.price.data() + raw.price.size(),
+    else if (auto [ptr, ec] = std::from_chars(priceField.data(),
+                                              priceField.data() + priceField.size(),
                                               price);
-             ec != std::errc() || ptr != raw.price.data() + raw.price.size() || price <= 0.0)
+             ec != std::errc() || ptr != priceField.data() + priceField.size() || price <= 0.0)
     {
         reason = "Invalid price";
     }
-    else if (auto [ptr, ec] = std::from_chars(raw.quantity.data(),
-                                              raw.quantity.data() + raw.quantity.size(),
+    else if (auto [ptr, ec] = std::from_chars(quantityField.data(),
+                                              quantityField.data() + quantityField.size(),
                                               qty);
-             ec != std::errc() || ptr != raw.quantity.data() + raw.quantity.size() ||
+             ec != std::errc() || ptr != quantityField.data() + quantityField.size() ||
              qty < 10 || qty > 1000 || qty % 10 != 0)
     {
         reason = "Invalid size";
@@ -112,18 +136,18 @@ std::variant<Order, OrderReject> OrderProcessor::processRow(const std::vector<st
     {
         return OrderReject{
             generateOrderID(),
-            raw.clientOrderId,
-            raw.instrument,
-            raw.side,
-            raw.price,
-            raw.quantity,
+            std::string(clientOrderId),
+            std::string(instrumentField),
+            std::string(sideField),
+            std::string(priceField),
+            std::string(quantityField),
             reason,
             utils::getCurrentTimestamp()};
     }
 
     // Create Order with validated values
     return Order{
-        raw.clientOrderId,
+        std::string(clientOrderId),
         generateOrderID(),
         inst,
         side,
