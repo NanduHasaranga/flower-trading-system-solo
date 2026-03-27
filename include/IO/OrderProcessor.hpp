@@ -11,7 +11,6 @@ class OrderProcessor
 {
 private:
     static long nextOrderId;
-    static std::string generateOrderID();
 
 public:
     static std::variant<Order, OrderReject> processRow(const CsvRow &row);
