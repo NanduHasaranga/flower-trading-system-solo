@@ -4,7 +4,7 @@ param(
     [string]$OutputPath = ".\data\execution.csv",
     [string]$CasesRoot = ".\tests\cases",
     [switch]$BuildBeforeRun,
-    [string]$BuildCommand = "g++ -O3 -std=c++20 .\\src\\Engine\\*.cpp .\\src\\IO\\*.cpp .\\src\\Utils\\*.cpp .\\src\\main.cpp -I .\\include\\ -o exchange_app"
+    [string]$BuildCommand = "g++ -O3 -std=c++20 .\\src\\Core\\*.cpp .\\src\\Engine\\*.cpp .\\src\\IO\\*.cpp .\\src\\Utils\\*.cpp .\\src\\main.cpp -I .\\include\\ -o exchange_app"
 )
 
 Set-StrictMode -Version Latest
@@ -53,14 +53,18 @@ function Get-NormalizedRows {
             }
         }
 
+        $quantityText = $parts[5].Trim()
+        $hasQuantity = -not [string]::IsNullOrWhiteSpace($quantityText)
         [int]$quantity = 0
-        if (-not [int]::TryParse($parts[5].Trim(), [ref]$quantity)) {
+        if ($hasQuantity -and -not [int]::TryParse($quantityText, [ref]$quantity)) {
             throw "[$ScenarioName] Invalid quantity value in row: '$line'"
         }
 
+        $priceText = $parts[6].Trim()
+        $hasPrice = -not [string]::IsNullOrWhiteSpace($priceText)
         [double]$price = 0.0
-        if (-not [double]::TryParse(
-                $parts[6].Trim(),
+        if ($hasPrice -and -not [double]::TryParse(
+                $priceText,
                 [System.Globalization.NumberStyles]::Float,
                 [System.Globalization.CultureInfo]::InvariantCulture,
                 [ref]$price
@@ -74,8 +78,8 @@ function Get-NormalizedRows {
             Instrument    = $parts[2].Trim()
             Side          = $parts[3].Trim()
             ExecStatus    = $parts[4].Trim().ToLowerInvariant()
-            Quantity      = $quantity
-            Price         = [Math]::Round($price, 2)
+            Quantity      = if ($hasQuantity) { $quantity } else { $null }
+            Price         = if ($hasPrice) { [Math]::Round($price, 2) } else { $null }
             Reason        = $parts[7].Trim().ToLowerInvariant()
             TransactionTime = $parts[8].Trim()
         }
@@ -167,7 +171,8 @@ $scenarioNames = @(
     "example4",
     "example5",
     "example6",
-    "example7"
+    "example7",
+    "example8"
 )
 
 if ($BuildBeforeRun -or -not (Test-Path -LiteralPath $ExecutablePath)) {
