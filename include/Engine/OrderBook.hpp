@@ -1,5 +1,4 @@
-#ifndef ORDERBOOK_HPP
-#define ORDERBOOK_HPP
+#pragma once
 
 #include <vector>
 #include <variant>
@@ -48,5 +47,3 @@ public:
     OrderBook() = default;
     void processOrder(Order &order, std::vector<std::variant<ExecutionReport, OrderReject>> &outReports);
 };
-
-#endif

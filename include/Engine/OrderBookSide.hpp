@@ -1,5 +1,4 @@
-#ifndef ORDERBOOKSIDE_HPP
-#define ORDERBOOKSIDE_HPP
+#pragma once
 
 #include <map>
 #include <deque>
@@ -72,5 +71,3 @@ public:
         return orders.empty();
     }
 };
-
-#endif

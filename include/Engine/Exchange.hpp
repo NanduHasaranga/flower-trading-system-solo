@@ -1,5 +1,4 @@
-#ifndef EXCHANGE_HPP
-#define EXCHANGE_HPP
+#pragma once
 
 #include <array>
 #include <cstddef>
@@ -24,5 +23,3 @@ public:
         return orderBooks[static_cast<std::size_t>(order.instrument)];
     }
 };
-
-#endif

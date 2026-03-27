@@ -1,5 +1,4 @@
-#ifndef EXECUTIONREPORT_HPP
-#define EXECUTIONREPORT_HPP
+#pragma once
 
 #include <string>
 #include "Types.hpp"
@@ -27,4 +26,3 @@ struct ExecutionReport
         OrderStatus status,
         std::string transactionTime) : clientOrderId(clientOrderId), orderId(orderId), instrument(instrument), side(side), price(price), quantity(quantity), status(status), transactionTime(std::move(transactionTime)) {}
 };
-#endif
