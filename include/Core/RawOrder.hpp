@@ -21,9 +21,22 @@ inline std::string_view fieldAt(const CsvRow &row, std::size_t index)
 
 struct RawOrder
 {
+    bool hasRequiredFieldCount = true;
     std::string clientOrderId;
     std::string instrument;
     std::string side;
-    std::string price;
     std::string quantity;
+    std::string price;
+
+    static RawOrder fromCsvRow(const CsvRow &row)
+    {
+        RawOrder rawOrder{
+            row.fieldCount >= 5,
+            std::string(fieldAt(row, 0)),
+            std::string(fieldAt(row, 1)),
+            std::string(fieldAt(row, 2)),
+            std::string(fieldAt(row, 3)),
+            std::string(fieldAt(row, 4))};
+        return rawOrder;
+    }
 };
