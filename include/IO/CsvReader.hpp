@@ -1,16 +1,9 @@
 #pragma once
 
 #include <string>
-#include <string_view>
-#include <array>
-#include <fstream>
 #include <optional>
-
-struct CsvRow
-{
-    std::array<std::string_view, 5> fields{};
-    std::size_t fieldCount = 0;
-};
+#include <fstream>
+#include "Core/RawOrder.hpp"
 
 class CsvReader
 {

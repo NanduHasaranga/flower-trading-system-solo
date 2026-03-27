@@ -4,15 +4,10 @@
 #include <charconv>
 #include "Core/Order.hpp"
 #include "Core/OrderReject.hpp"
+#include "Core/RawOrder.hpp"
 #include "IO/CsvReader.hpp"
 #include "Utils/TimeUtils.hpp"
-
-long OrderProcessor::nextOrderId = 1;
-
-std::string OrderProcessor::generateOrderID()
-{
-    return "ord" + std::to_string(nextOrderId++);
-}
+#include "Utils/OrderIdGenerator.hpp"
 
 static bool tryInstrument(std::string_view value, Instrument &out)
 {
@@ -63,15 +58,6 @@ static bool trySide(std::string_view value, Side &out)
     return false;
 }
 
-static std::string_view fieldAt(const CsvRow &row, std::size_t index)
-{
-    if (index < row.fieldCount && index < row.fields.size())
-    {
-        return row.fields[index];
-    }
-    return {};
-}
-
 std::variant<Order, OrderReject> OrderProcessor::processRow(const CsvRow &row)
 {
     // Ingest
@@ -84,7 +70,7 @@ std::variant<Order, OrderReject> OrderProcessor::processRow(const CsvRow &row)
         const std::string_view price = fieldAt(row, 4);
 
         return OrderReject{
-            generateOrderID(),
+            Utils::OrderIdGenerator::generateId(),
             std::string(clientOrderId),
             std::string(instrument),
             std::string(side),
@@ -135,7 +121,7 @@ std::variant<Order, OrderReject> OrderProcessor::processRow(const CsvRow &row)
     if (!reason.empty())
     {
         return OrderReject{
-            generateOrderID(),
+            Utils::OrderIdGenerator::generateId(),
             std::string(clientOrderId),
             std::string(instrumentField),
             std::string(sideField),
@@ -148,7 +134,7 @@ std::variant<Order, OrderReject> OrderProcessor::processRow(const CsvRow &row)
     // Create Order with validated values
     return Order{
         std::string(clientOrderId),
-        generateOrderID(),
+        Utils::OrderIdGenerator::generateId(),
         inst,
         side,
         price,
