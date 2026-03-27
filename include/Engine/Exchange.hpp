@@ -1,18 +1,27 @@
 #ifndef EXCHANGE_HPP
 #define EXCHANGE_HPP
 
+#include <array>
+#include <cstddef>
 #include "OrderBook.hpp"
 
 class Exchange
 {
 private:
-    std::map<Instrument, OrderBook> orderBooks;
+    static constexpr std::size_t kInstrumentCount = InstrumentStrings.size();
+    std::array<OrderBook, kInstrumentCount> orderBooks{};
 
 public:
     Exchange() = default;
-    OrderBook &getOrderBook(Order &order)
+
+    OrderBook &getOrderBook(const Order &order)
     {
-        return Exchange::orderBooks[order.instrument];
+        return orderBooks[static_cast<std::size_t>(order.instrument)];
+    }
+
+    const OrderBook &getOrderBook(const Order &order) const
+    {
+        return orderBooks[static_cast<std::size_t>(order.instrument)];
     }
 };
 
