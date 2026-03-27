@@ -1,5 +1,4 @@
-#ifndef RAWORDER_HPP
-#define RAWORDER_HPP
+#pragma once
 
 #include <string>
 
@@ -11,5 +10,3 @@ struct RawOrder
     std::string price;
     std::string quantity;
 };
-
-#endif

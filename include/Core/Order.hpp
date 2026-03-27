@@ -1,5 +1,4 @@
-#ifndef ORDER_HPP
-#define ORDER_HPP
+#pragma once
 
 #include <string>
 #include "Types.hpp"
@@ -13,5 +12,3 @@ struct Order
     double price;
     int quantity;
 };
-
-#endif

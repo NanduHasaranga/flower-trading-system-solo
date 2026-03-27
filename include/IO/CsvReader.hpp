@@ -1,5 +1,4 @@
-#ifndef CSVREADER_HPP
-#define CSVREADER_HPP
+#pragma once
 
 #include <string>
 #include <string_view>
@@ -28,5 +27,3 @@ private:
     std::string currentLine;
     CsvRow parseLine(const std::string &line) const;
 };
-
-#endif

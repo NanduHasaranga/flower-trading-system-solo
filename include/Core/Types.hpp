@@ -1,5 +1,4 @@
-#ifndef TYPES_HPP
-#define TYPES_HPP
+#pragma once
 
 #include <array>
 
@@ -41,5 +40,3 @@ inline constexpr const char *to_string(Side s)
 {
     return SideStrings[static_cast<int>(s)];
 }
-
-#endif

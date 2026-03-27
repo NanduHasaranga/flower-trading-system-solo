@@ -1,5 +1,4 @@
-#ifndef REJECTIONREPORT_HPP
-#define REJECTIONREPORT_HPP
+#pragma once
 
 #include <string>
 #include <utility>
@@ -35,5 +34,3 @@ struct OrderReject
     {
     }
 };
-
-#endif
