@@ -1,47 +1,34 @@
 #include <iostream>
+#include <vector>
+#include <variant>
 #include "Engine\Exchange.hpp"
 #include "IO\CsvReader.hpp"
 #include "IO\OrderProcessor.hpp"
 #include "IO\CsvWriter.hpp"
-#include <fstream>
+#include "Core\OrderReject.hpp"
 
 int main()
 {
-    std::vector<ExecutionReport> records;
+    std::vector<std::variant<ExecutionReport, OrderReject>> records;
     Exchange exchange;
     CsvWriter writer;
-    CsvReader reader;
+    CsvReader reader("data/orders.csv");
 
-    std::ifstream file("data/orders.csv");
-    if (!file.is_open())
+    while (auto row = reader.nextRow())
     {
-        std::cerr << "Failed to open data/orders.csv\n";
-        return 1;
-    }
-
-    std::string line;
-    std::getline(file, line);
-
-    while (std::getline(file, line))
-    {
-        auto row = reader.parseLine(line);
-        if (row.empty())
-            continue;
-
-        auto result = OrderProcessor::processRow(row);
+        auto result = OrderProcessor::processRow(*row);
 
         if (auto *order = std::get_if<Order>(&result))
         {
             auto &orderBook = exchange.getOrderBook(*order);
-            auto reports = orderBook.processOrder(*order);
-
-            records.insert(records.end(), reports.begin(), reports.end());
+            orderBook.processOrder(*order, records);
         }
         else
         {
-            records.push_back(std::get<ExecutionReport>(result));
+            records.emplace_back(std::get<OrderReject>(result));
         }
     }
 
     writer.writeExecutions("data/execution.csv", records);
+    return 0;
 }

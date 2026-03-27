@@ -1,5 +1,4 @@
-#ifndef TIMEUTILS_HPP
-#define TIMEUTILS_HPP
+#pragma once
 
 #include <string>
 
@@ -8,5 +7,3 @@ namespace utils
     // YYYYMMDD-HHMMSS.000
     std::string getCurrentTimestamp();
 }
-
-#endif

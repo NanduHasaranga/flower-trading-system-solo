@@ -4,7 +4,7 @@ param(
     [string]$OutputPath = ".\data\execution.csv",
     [string]$CasesRoot = ".\tests\cases",
     [switch]$BuildBeforeRun,
-    [string]$BuildCommand = "g++ -O3 -std=c++20 .\\src\\Engine\\*.cpp .\\src\\IO\\*.cpp .\\src\\Utils\\*.cpp .\\src\\main.cpp -I .\\include\\ -o exchange_app"
+    [string]$BuildCommand = "g++ -O3 -std=c++20 .\\src\\Core\\*.cpp .\\src\\Engine\\*.cpp .\\src\\IO\\*.cpp .\\src\\Utils\\*.cpp .\\src\\main.cpp -I .\\include\\ -o exchange_app"
 )
 
 Set-StrictMode -Version Latest
@@ -45,22 +45,26 @@ function Get-NormalizedRows {
     $dataLines = $lines[1..($lines.Count - 1)]
 
     foreach ($line in $dataLines) {
-        $parts = $line.Split(',', 8)
-        if ($parts.Count -lt 8) {
-            $missing = 8 - $parts.Count
+        $parts = $line.Split(',', 9)
+        if ($parts.Count -lt 9) {
+            $missing = 9 - $parts.Count
             for ($i = 0; $i -lt $missing; $i++) {
                 $parts += ""
             }
         }
 
+        $quantityText = $parts[5].Trim()
+        $hasQuantity = -not [string]::IsNullOrWhiteSpace($quantityText)
         [int]$quantity = 0
-        if (-not [int]::TryParse($parts[5].Trim(), [ref]$quantity)) {
+        if ($hasQuantity -and -not [int]::TryParse($quantityText, [ref]$quantity)) {
             throw "[$ScenarioName] Invalid quantity value in row: '$line'"
         }
 
+        $priceText = $parts[6].Trim()
+        $hasPrice = -not [string]::IsNullOrWhiteSpace($priceText)
         [double]$price = 0.0
-        if (-not [double]::TryParse(
-                $parts[6].Trim(),
+        if ($hasPrice -and -not [double]::TryParse(
+                $priceText,
                 [System.Globalization.NumberStyles]::Float,
                 [System.Globalization.CultureInfo]::InvariantCulture,
                 [ref]$price
@@ -74,9 +78,10 @@ function Get-NormalizedRows {
             Instrument    = $parts[2].Trim()
             Side          = $parts[3].Trim()
             ExecStatus    = $parts[4].Trim().ToLowerInvariant()
-            Quantity      = $quantity
-            Price         = [Math]::Round($price, 2)
+            Quantity      = if ($hasQuantity) { $quantity } else { $null }
+            Price         = if ($hasPrice) { [Math]::Round($price, 2) } else { $null }
             Reason        = $parts[7].Trim().ToLowerInvariant()
+            TransactionTime = $parts[8].Trim()
         }
     }
 
@@ -130,6 +135,20 @@ function Compare-Rows {
         if ($expectedRow.Reason -ne $actualRow.Reason) {
             $differences += "Row $($i + 1): Reason expected '$($expectedRow.Reason)' but got '$($actualRow.Reason)'"
         }
+
+        # Legacy expected fixtures do not include Transaction Time; treat missing expected value as wildcard,
+        # but still require actual output to carry a valid timestamp format.
+        if ([string]::IsNullOrWhiteSpace($expectedRow.TransactionTime)) {
+            if ([string]::IsNullOrWhiteSpace($actualRow.TransactionTime)) {
+                $differences += "Row $($i + 1): TransactionTime is missing in actual output"
+            }
+            elseif ($actualRow.TransactionTime -notmatch '^\d{8}-\d{6}\.\d{3}$') {
+                $differences += "Row $($i + 1): TransactionTime '$($actualRow.TransactionTime)' is not in expected format YYYYMMDD-HHMMSS.mmm"
+            }
+        }
+        elseif ($expectedRow.TransactionTime -ne $actualRow.TransactionTime) {
+            $differences += "Row $($i + 1): TransactionTime expected '$($expectedRow.TransactionTime)' but got '$($actualRow.TransactionTime)'"
+        }
     }
 
     if ($differences.Count -eq 0) {
@@ -152,7 +171,8 @@ $scenarioNames = @(
     "example4",
     "example5",
     "example6",
-    "example7"
+    "example7",
+    "example8"
 )
 
 if ($BuildBeforeRun -or -not (Test-Path -LiteralPath $ExecutablePath)) {

@@ -1,0 +1,6 @@
+Order ID,Cl. Ord. ID,Instrument,Side,Exec Status,Quantity,Price,Reason
+ord1,aa13,Rose,1,Reject,100,,Missing fields
+ord2,aa14,Lavender,2,Reject,,45.00,Invalid size
+ord3,aa15,,1,Reject,100,55.00,Invalid instrument
+ord4,aa16,Rose,,Reject,100,65.00,Invalid side
+ord5,aa17,Orchid,1,Reject,,1.00,Invalid size

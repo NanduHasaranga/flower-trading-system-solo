@@ -1,13 +1,22 @@
-#ifndef CSVREADER_HPP
-#define CSVREADER_HPP
+#pragma once
 
 #include <string>
-#include <vector>
+#include <optional>
+#include <fstream>
+#include "Core/RawOrder.hpp"
 
 class CsvReader
 {
 public:
-    std::vector<std::string> parseLine(const std::string &line) const;
-};
+    CsvReader() = default;
+    explicit CsvReader(const std::string &filepath);
+    ~CsvReader() = default;
+    bool open(const std::string &filepath);
+    std::optional<CsvRow> nextRow();
+    void close();
 
-#endif
+private:
+    std::ifstream file;
+    std::string currentLine;
+    CsvRow parseLine(const std::string &line) const;
+};

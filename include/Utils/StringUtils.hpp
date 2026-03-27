@@ -1,5 +1,4 @@
-#ifndef STRING_UTILS_HPP
-#define STRING_UTILS_HPP
+#pragma once
 
 #include <string>
 #include <charconv>
@@ -22,4 +21,3 @@ namespace utils
     }
 
 }
-#endif

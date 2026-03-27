@@ -1,5 +1,4 @@
-#ifndef TYPES_HPP
-#define TYPES_HPP
+#pragma once
 
 #include <array>
 
@@ -18,6 +17,14 @@ enum class Instrument
     Orchid
 };
 
+enum class OrderStatus
+{
+    New,
+    Fill,
+    PFill,
+    Reject
+};
+
 constexpr std::array<const char *, 5> InstrumentStrings = {
     "Rose", "Lavender", "Lotus", "Tulip", "Orchid"};
 
@@ -33,5 +40,3 @@ inline constexpr const char *to_string(Side s)
 {
     return SideStrings[static_cast<int>(s)];
 }
-
-#endif
