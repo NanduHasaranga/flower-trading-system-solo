@@ -9,8 +9,8 @@ struct OrderReject
     std::string clientOrderId;
     std::string instrument;
     std::string side;
-    std::string price;
     std::string quantity;
+    std::string price;
     std::string reason;
     std::string timestamp;
 
@@ -19,16 +19,16 @@ struct OrderReject
                 std::string clientOrderId,
                 std::string instrument,
                 std::string side,
-                std::string price,
                 std::string quantity,
+                std::string price,
                 std::string reason,
                 std::string timestamp)
         : orderId(std::move(orderId)),
           clientOrderId(std::move(clientOrderId)),
           instrument(std::move(instrument)),
           side(std::move(side)),
-          price(std::move(price)),
           quantity(std::move(quantity)),
+          price(std::move(price)),
           reason(std::move(reason)),
           timestamp(std::move(timestamp))
     {
