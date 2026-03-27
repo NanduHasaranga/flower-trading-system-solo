@@ -39,7 +39,7 @@ private:
     void matchOrder(Order &order,
                     IOrderBookSide &passiveSide,
                     IOrderBookSide &restingSide,
-                    std::function<bool(int passivePrice, int incomingPrice)> priceBreaks,
+                    std::function<bool(double passivePrice, double incomingPrice)> priceBreaks,
                     std::vector<std::variant<ExecutionReport, OrderReject>> &outReports,
                     const std::string &timestamp);
 

@@ -50,8 +50,8 @@ namespace
 
 void CsvWriter::writeExecutions(const std::string &path, const std::vector<std::variant<ExecutionReport, OrderReject>> &reports)
 {
-    std::ofstream file(path);
     std::vector<char> ioBuffer(1 << 20);
+    std::ofstream file(path);
     file.rdbuf()->pubsetbuf(ioBuffer.data(), static_cast<std::streamsize>(ioBuffer.size()));
 
     std::string output;
