@@ -14,7 +14,6 @@ private:
     Instrument instrument;
     OrderBookSide<BuyComparator> buyingSide;
     OrderBookSide<SellComparator> sellingSide;
-    bool isMatchingOrder(const Order &order);
 
 public:
     OrderBook() = default;

@@ -1,34 +1,21 @@
-#include "Engine\OrderBook.hpp"
+#include "Engine/OrderBook.hpp"
 #include "Utils/TimeUtils.hpp"
-
-bool OrderBook::isMatchingOrder(const Order &order)
-{
-    if (order.side == Side::Sell)
-    {
-        if (OrderBook::buyingSide.isEmpty())
-        {
-            return false;
-        }
-        return OrderBook::buyingSide.getBestOrder().price >= order.price;
-    }
-
-    if (OrderBook::sellingSide.isEmpty())
-    {
-        return false;
-    }
-    return OrderBook::sellingSide.getBestOrder().price <= order.price;
-}
 
 void OrderBook::processOrder(Order &order, std::vector<std::variant<ExecutionReport, OrderReject>> &outReports)
 {
-    bool isProceed = false;
+    bool hasExecution = false;
     const std::string timestamp = utils::getCurrentTimestamp();
 
     if (order.side == Side::Sell)
     {
-        while (isMatchingOrder(order))
+        while (!OrderBook::buyingSide.isEmpty())
         {
             const Order &topOrder = OrderBook::buyingSide.getBestOrder();
+            if (topOrder.price < order.price)
+            {
+                break;
+            }
+
             if (order.quantity >= topOrder.quantity)
             {
                 int proceedQuantity = topOrder.quantity;
@@ -45,7 +32,7 @@ void OrderBook::processOrder(Order &order, std::vector<std::variant<ExecutionRep
                     outReports.emplace_back(std::in_place_type<ExecutionReport>, topOrder.clientOrderId, topOrder.orderId, topOrder.instrument, topOrder.side, topOrder.price, proceedQuantity, OrderStatus::Fill, timestamp);
                     order.quantity = order.quantity - proceedQuantity;
                     OrderBook::buyingSide.removeTopOrder();
-                    isProceed = true;
+                    hasExecution = true;
                 }
             }
             else
@@ -57,47 +44,50 @@ void OrderBook::processOrder(Order &order, std::vector<std::variant<ExecutionRep
                 return;
             }
         }
-        if (!isProceed)
+        if (!hasExecution)
             outReports.emplace_back(std::in_place_type<ExecutionReport>, order.clientOrderId, order.orderId, order.instrument, order.side, order.price, order.quantity, OrderStatus::New, timestamp);
         OrderBook::sellingSide.insertOrder(order);
         return;
     }
-    else
+
+    while (!OrderBook::sellingSide.isEmpty())
     { 
-        while (isMatchingOrder(order))
+        const Order &topOrder = OrderBook::sellingSide.getBestOrder();
+        if (topOrder.price > order.price)
         {
-            const Order &topOrder = OrderBook::sellingSide.getBestOrder();
-            if (order.quantity >= topOrder.quantity)
+            break;
+        }
+
+        if (order.quantity >= topOrder.quantity)
+        {
+            int proceedQuantity = topOrder.quantity;
+            if (order.quantity == topOrder.quantity)
             {
-                int proceedQuantity = topOrder.quantity;
-                if (order.quantity == topOrder.quantity)
-                {
-                    outReports.emplace_back(std::in_place_type<ExecutionReport>, order.clientOrderId, order.orderId, order.instrument, order.side, topOrder.price, proceedQuantity, OrderStatus::Fill, timestamp);
-                    outReports.emplace_back(std::in_place_type<ExecutionReport>, topOrder.clientOrderId, topOrder.orderId, topOrder.instrument, topOrder.side, topOrder.price, proceedQuantity, OrderStatus::Fill, timestamp);
-                    OrderBook::sellingSide.removeTopOrder();
-                    return;
-                }
-                else
-                {
-                    outReports.emplace_back(std::in_place_type<ExecutionReport>, order.clientOrderId, order.orderId, order.instrument, order.side, topOrder.price, proceedQuantity, OrderStatus::PFill, timestamp);
-                    outReports.emplace_back(std::in_place_type<ExecutionReport>, topOrder.clientOrderId, topOrder.orderId, topOrder.instrument, topOrder.side, topOrder.price, proceedQuantity, OrderStatus::Fill, timestamp);
-                    order.quantity = order.quantity - proceedQuantity;
-                    OrderBook::sellingSide.removeTopOrder();
-                    isProceed = true;
-                }
+                outReports.emplace_back(std::in_place_type<ExecutionReport>, order.clientOrderId, order.orderId, order.instrument, order.side, topOrder.price, proceedQuantity, OrderStatus::Fill, timestamp);
+                outReports.emplace_back(std::in_place_type<ExecutionReport>, topOrder.clientOrderId, topOrder.orderId, topOrder.instrument, topOrder.side, topOrder.price, proceedQuantity, OrderStatus::Fill, timestamp);
+                OrderBook::sellingSide.removeTopOrder();
+                return;
             }
             else
             {
-                int proceedQuantity = order.quantity;
-                outReports.emplace_back(std::in_place_type<ExecutionReport>, order.clientOrderId, order.orderId, order.instrument, order.side, topOrder.price, proceedQuantity, OrderStatus::Fill, timestamp);
-                outReports.emplace_back(std::in_place_type<ExecutionReport>, topOrder.clientOrderId, topOrder.orderId, topOrder.instrument, topOrder.side, topOrder.price, proceedQuantity, OrderStatus::PFill, timestamp);
-                OrderBook::sellingSide.updateTopOrderQuantity(topOrder.quantity - proceedQuantity);
-                return;
+                outReports.emplace_back(std::in_place_type<ExecutionReport>, order.clientOrderId, order.orderId, order.instrument, order.side, topOrder.price, proceedQuantity, OrderStatus::PFill, timestamp);
+                outReports.emplace_back(std::in_place_type<ExecutionReport>, topOrder.clientOrderId, topOrder.orderId, topOrder.instrument, topOrder.side, topOrder.price, proceedQuantity, OrderStatus::Fill, timestamp);
+                order.quantity = order.quantity - proceedQuantity;
+                OrderBook::sellingSide.removeTopOrder();
+                hasExecution = true;
             }
         }
-        if (!isProceed)
-            outReports.emplace_back(std::in_place_type<ExecutionReport>, order.clientOrderId, order.orderId, order.instrument, order.side, order.price, order.quantity, OrderStatus::New, timestamp);
-        OrderBook::buyingSide.insertOrder(order);
-        return;
+        else
+        {
+            int proceedQuantity = order.quantity;
+            outReports.emplace_back(std::in_place_type<ExecutionReport>, order.clientOrderId, order.orderId, order.instrument, order.side, topOrder.price, proceedQuantity, OrderStatus::Fill, timestamp);
+            outReports.emplace_back(std::in_place_type<ExecutionReport>, topOrder.clientOrderId, topOrder.orderId, topOrder.instrument, topOrder.side, topOrder.price, proceedQuantity, OrderStatus::PFill, timestamp);
+            OrderBook::sellingSide.updateTopOrderQuantity(topOrder.quantity - proceedQuantity);
+            return;
+        }
     }
+
+    if (!hasExecution)
+        outReports.emplace_back(std::in_place_type<ExecutionReport>, order.clientOrderId, order.orderId, order.instrument, order.side, order.price, order.quantity, OrderStatus::New, timestamp);
+    OrderBook::buyingSide.insertOrder(order);
 }
