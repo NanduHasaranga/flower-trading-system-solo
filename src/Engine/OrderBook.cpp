@@ -5,7 +5,7 @@ void OrderBook::matchOrder(
     Order &order,
     IOrderBookSide &passiveSide,
     IOrderBookSide &restingSide,
-    std::function<bool(int passivePrice, int incomingPrice)> priceBreaks,
+    std::function<bool(double passivePrice, double incomingPrice)> priceBreaks,
     std::vector<std::variant<ExecutionReport, OrderReject>> &outReports,
     const std::string &timestamp)
 {
@@ -75,12 +75,12 @@ void OrderBook::processOrder(
 
     if (order.side == Side::Sell)
     {
-        matchOrder(order, buyAdapter, sellAdapter, [](int passivePrice, int incomingPrice)
+        matchOrder(order, buyAdapter, sellAdapter, [](double passivePrice, double incomingPrice)
                    { return passivePrice < incomingPrice; }, outReports, timestamp);
     }
     else
     {
-        matchOrder(order, sellAdapter, buyAdapter, [](int passivePrice, int incomingPrice)
+        matchOrder(order, sellAdapter, buyAdapter, [](double passivePrice, double incomingPrice)
                    { return passivePrice > incomingPrice; }, outReports, timestamp);
     }
 }
