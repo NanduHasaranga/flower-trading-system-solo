@@ -2,18 +2,17 @@
 #define EXECUTIONREPORT_HPP
 
 #include <string>
-#include <utility>
+#include "Types.hpp"
 
 struct ExecutionReport
 {
     std::string clientOrderId;
     std::string orderId;
-    std::string instrument;
-    std::string side;
-    std::string price;
-    std::string quantity;
-    std::string status;
-    std::string reason;
+    Instrument instrument;
+    Side side;
+    double price;
+    int quantity;
+    OrderStatus status;
     std::string transactionTime;
 
     ExecutionReport() = default;
@@ -21,12 +20,11 @@ struct ExecutionReport
     ExecutionReport(
         std::string clientOrderId,
         std::string orderId,
-        std::string instrument,
-        std::string side,
-        std::string price,
-        std::string quantity,
-        std::string status,
-        std::string reason,
-        std::string transactionTime) : clientOrderId(std::move(clientOrderId)), orderId(std::move(orderId)), instrument(std::move(instrument)), side(std::move(side)), price(std::move(price)), quantity(std::move(quantity)), status(std::move(status)), reason(std::move(reason)), transactionTime(std::move(transactionTime)) {}
+        Instrument instrument,
+        Side side,
+        double price,
+        int quantity,
+        OrderStatus status,
+        std::string transactionTime) : clientOrderId(clientOrderId), orderId(orderId), instrument(instrument), side(side), price(price), quantity(quantity), status(status), transactionTime(std::move(transactionTime)) {}
 };
 #endif

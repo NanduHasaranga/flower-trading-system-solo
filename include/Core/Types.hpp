@@ -18,6 +18,14 @@ enum class Instrument
     Orchid
 };
 
+enum class OrderStatus
+{
+    New,
+    Fill,
+    PFill,
+    Reject
+};
+
 constexpr std::array<const char *, 5> InstrumentStrings = {
     "Rose", "Lavender", "Lotus", "Tulip", "Orchid"};
 
