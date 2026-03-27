@@ -4,6 +4,7 @@
 #include <vector>
 #include "Core/Order.hpp"
 #include "Core/OrderReject.hpp"
+#include "Core/RawOrder.hpp"
 
 struct CsvRow;
 

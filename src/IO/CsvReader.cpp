@@ -39,8 +39,12 @@ std::optional<CsvRow> CsvReader::nextRow()
         return std::nullopt;
     }
 
-    if (std::getline(file, currentLine))
+    while (std::getline(file, currentLine))
     {
+        if (currentLine.find_first_not_of(" \t\r\n") == std::string::npos)
+        {
+            continue;
+        }
         return parseLine(currentLine);
     }
 
