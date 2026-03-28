@@ -21,6 +21,7 @@ bool CsvReader::open(const std::string &filepath)
 
     std::string line;
     std::getline(file, line);
+    currentLine.reserve(256);
     return true;
 }
 

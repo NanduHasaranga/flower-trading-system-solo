@@ -1,37 +1,41 @@
 #include "IO/OrderProcessor.hpp"
 #include <string>
-#include <string_view>
 #include "Core/Order.hpp"
 #include "Core/OrderReject.hpp"
-#include "Core/RawOrder.hpp"
-#include "Core/OrderValidator.hpp"
 #include "IO/CsvReader.hpp"
 #include "Utils/TimeUtils.hpp"
 #include "Utils/OrderIdGenerator.hpp"
 
 std::variant<Order, OrderReject> OrderProcessor::processRow(const CsvRow &row)
 {
-    const RawOrder rawOrder = RawOrder::fromCsvRow(row);
+    auto validation = OrderValidator::validate(row);
 
-    // Validate
-    auto validation = OrderValidator::validate(rawOrder);
     if (auto *rejectReason = std::get_if<std::string>(&validation))
     {
-        return OrderReject{
-            Utils::OrderIdGenerator::generateId(),
-            rawOrder.clientOrderId,
-            rawOrder.instrument,
-            rawOrder.side,
-            rawOrder.quantity,
-            rawOrder.price,
-            *rejectReason,
-            utils::getCurrentTimestamp()};
+        return buildReject(row, *rejectReason);
     }
 
-    // Create Order with validated values
     const ValidationResult &result = std::get<ValidationResult>(validation);
+    return buildValidatedOrder(row, result);
+}
+
+OrderReject OrderProcessor::buildReject(const CsvRow &row, const std::string &rejectReason)
+{
+    return OrderReject{
+        Utils::OrderIdGenerator::generateId(),
+        std::string(fieldAt(row, 0)),
+        std::string(fieldAt(row, 1)),
+        std::string(fieldAt(row, 2)),
+        std::string(fieldAt(row, 3)),
+        std::string(fieldAt(row, 4)),
+        rejectReason,
+        utils::getCurrentTimestamp()};
+}
+
+Order OrderProcessor::buildValidatedOrder(const CsvRow &row, const ValidationResult &result)
+{
     return Order{
-        rawOrder.clientOrderId,
+        std::string(fieldAt(row, 0)),
         Utils::OrderIdGenerator::generateId(),
         result.instrument,
         result.side,
