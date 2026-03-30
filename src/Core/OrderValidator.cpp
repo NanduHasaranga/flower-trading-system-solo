@@ -1,5 +1,5 @@
 #include "Core/OrderValidator.hpp"
-#include "Core/RawOrder.hpp"
+#include "IO/CsvReader.hpp"
 #include <charconv>
 
 bool OrderValidator::tryInstrument(std::string_view value, Instrument &out)
@@ -80,31 +80,31 @@ std::string OrderValidator::validateQuantity(std::string_view quantityStr, int &
     return {};
 }
 
-std::variant<ValidationResult, std::string> OrderValidator::validate(const RawOrder &rawOrder)
+std::variant<ValidationResult, std::string> OrderValidator::validate(const CsvRow &row)
 {
     ValidationResult result;
 
-    if (!rawOrder.hasRequiredFieldCount)
+    if (row.fieldCount != 5)
     {
         return std::string("Missing fields");
     }
 
-    if (!tryInstrument(rawOrder.instrument, result.instrument))
+    if (!tryInstrument(fieldAt(row, 1), result.instrument))
     {
         return std::string("Invalid instrument");
     }
 
-    if (!trySide(rawOrder.side, result.side))
+    if (!trySide(fieldAt(row, 2), result.side))
     {
         return std::string("Invalid side");
     }
 
-    if (auto err = validatePrice(rawOrder.price, result.price); !err.empty())
+    if (auto err = validatePrice(fieldAt(row, 4), result.price); !err.empty())
     {
         return err;
     }
 
-    if (auto err = validateQuantity(rawOrder.quantity, result.quantity); !err.empty())
+    if (auto err = validateQuantity(fieldAt(row, 3), result.quantity); !err.empty())
     {
         return err;
     }

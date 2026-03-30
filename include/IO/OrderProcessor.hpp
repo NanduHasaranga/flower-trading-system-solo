@@ -4,15 +4,16 @@
 #include <vector>
 #include "Core/Order.hpp"
 #include "Core/OrderReject.hpp"
-#include "Core/RawOrder.hpp"
+#include "Core/OrderValidator.hpp"
 
 struct CsvRow;
 
 class OrderProcessor
 {
-private:
-    static long nextOrderId;
-
 public:
     static std::variant<Order, OrderReject> processRow(const CsvRow &row);
+
+private:
+    static OrderReject buildReject(const CsvRow &row, const std::string &rejectReason);
+    static Order buildValidatedOrder(const CsvRow &row, const ValidationResult &result);
 };

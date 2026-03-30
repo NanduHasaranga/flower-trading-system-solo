@@ -2,7 +2,6 @@
 
 #include <vector>
 #include <variant>
-#include <functional>
 #include "OrderBookSide.hpp"
 #include "./Core/ExecutionReport.hpp"
 #include "./Core/OrderReject.hpp"
@@ -17,31 +16,11 @@ struct IOrderBookSide
     virtual ~IOrderBookSide() = default;
 };
 
-template <typename Comparator>
-struct OrderBookSideAdapter : IOrderBookSide
-{
-    OrderBookSide<Comparator> &side;
-    explicit OrderBookSideAdapter(OrderBookSide<Comparator> &s) : side(s) {}
-
-    bool isEmpty() const override { return side.isEmpty(); }
-    const Order &getBestOrder() const override { return side.getBestOrder(); }
-    void removeTopOrder() override { side.removeTopOrder(); }
-    void updateTopOrderQuantity(int qty) override { side.updateTopOrderQuantity(qty); }
-    void insertOrder(const Order &order) override { side.insertOrder(order); }
-};
-
 class OrderBook
 {
 private:
     OrderBookSide<BuyComparator> buyingSide;
     OrderBookSide<SellComparator> sellingSide;
-
-    void matchOrder(Order &order,
-                    IOrderBookSide &passiveSide,
-                    IOrderBookSide &restingSide,
-                    std::function<bool(double passivePrice, double incomingPrice)> priceBreaks,
-                    std::vector<std::variant<ExecutionReport, OrderReject>> &outReports,
-                    const std::string &timestamp);
 
 public:
     OrderBook() = default;

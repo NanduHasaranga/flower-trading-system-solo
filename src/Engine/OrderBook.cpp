@@ -1,86 +1,101 @@
 #include "Engine/OrderBook.hpp"
 #include "Utils/TimeUtils.hpp"
 
-void OrderBook::matchOrder(
-    Order &order,
-    IOrderBookSide &passiveSide,
-    IOrderBookSide &restingSide,
-    std::function<bool(double passivePrice, double incomingPrice)> priceBreaks,
-    std::vector<std::variant<ExecutionReport, OrderReject>> &outReports,
-    const std::string &timestamp)
+namespace
 {
-    bool hasExecution = false;
-
-    while (!passiveSide.isEmpty())
+    struct BreakForSell
     {
-        const Order &topOrder = passiveSide.getBestOrder();
-        if (priceBreaks(topOrder.price, order.price))
-            break;
-
-        const int proceedQuantity = std::min(order.quantity, topOrder.quantity);
-
-        if (order.quantity >= topOrder.quantity)
+        bool operator()(double passivePrice, double incomingPrice) const
         {
-            const OrderStatus incomingStatus = (order.quantity == topOrder.quantity)
-                                                   ? OrderStatus::Fill
-                                                   : OrderStatus::PFill;
+            return passivePrice < incomingPrice;
+        }
+    };
 
-            outReports.emplace_back(std::in_place_type<ExecutionReport>,
-                                    order.clientOrderId, order.orderId, order.instrument, order.side,
-                                    topOrder.price, proceedQuantity, incomingStatus, timestamp);
+    struct BreakForBuy
+    {
+        bool operator()(double passivePrice, double incomingPrice) const
+        {
+            return passivePrice > incomingPrice;
+        }
+    };
 
-            outReports.emplace_back(std::in_place_type<ExecutionReport>,
-                                    topOrder.clientOrderId, topOrder.orderId, topOrder.instrument, topOrder.side,
-                                    topOrder.price, proceedQuantity, OrderStatus::Fill, timestamp);
+    template <typename PassiveSideT, typename RestingSideT, typename PriceBreakT>
+    void matchOrderImpl(
+        Order &order,
+        PassiveSideT &passiveSide,
+        RestingSideT &restingSide,
+        PriceBreakT priceBreaks,
+        std::vector<std::variant<ExecutionReport, OrderReject>> &outReports,
+        const utils::Timestamp &timestamp)
+    {
+        bool hasExecution = false;
 
-            order.quantity -= proceedQuantity;
-            passiveSide.removeTopOrder();
+        while (!passiveSide.isEmpty())
+        {
+            const Order &topOrder = passiveSide.getBestOrder();
+            if (priceBreaks(topOrder.price, order.price))
+                break;
 
-            if (incomingStatus == OrderStatus::Fill)
+            const int proceedQuantity = std::min(order.quantity, topOrder.quantity);
+
+            if (order.quantity >= topOrder.quantity)
+            {
+                const OrderStatus incomingStatus = (order.quantity == topOrder.quantity)
+                                                       ? OrderStatus::Fill
+                                                       : OrderStatus::PFill;
+
+                outReports.emplace_back(std::in_place_type<ExecutionReport>,
+                                        order.clientOrderId, order.orderId, order.instrument, order.side,
+                                        topOrder.price, proceedQuantity, incomingStatus, timestamp);
+
+                outReports.emplace_back(std::in_place_type<ExecutionReport>,
+                                        topOrder.clientOrderId, topOrder.orderId, topOrder.instrument, topOrder.side,
+                                        topOrder.price, proceedQuantity, OrderStatus::Fill, timestamp);
+
+                order.quantity -= proceedQuantity;
+                passiveSide.removeTopOrder();
+
+                if (incomingStatus == OrderStatus::Fill)
+                    return;
+
+                hasExecution = true;
+            }
+            else
+            {
+                outReports.emplace_back(std::in_place_type<ExecutionReport>,
+                                        order.clientOrderId, order.orderId, order.instrument, order.side,
+                                        topOrder.price, proceedQuantity, OrderStatus::Fill, timestamp);
+
+                outReports.emplace_back(std::in_place_type<ExecutionReport>,
+                                        topOrder.clientOrderId, topOrder.orderId, topOrder.instrument, topOrder.side,
+                                        topOrder.price, proceedQuantity, OrderStatus::PFill, timestamp);
+
+                passiveSide.updateTopOrderQuantity(topOrder.quantity - proceedQuantity);
                 return;
-
-            hasExecution = true;
+            }
         }
-        else
-        {
+
+        if (!hasExecution)
             outReports.emplace_back(std::in_place_type<ExecutionReport>,
                                     order.clientOrderId, order.orderId, order.instrument, order.side,
-                                    topOrder.price, proceedQuantity, OrderStatus::Fill, timestamp);
+                                    order.price, order.quantity, OrderStatus::New, timestamp);
 
-            outReports.emplace_back(std::in_place_type<ExecutionReport>,
-                                    topOrder.clientOrderId, topOrder.orderId, topOrder.instrument, topOrder.side,
-                                    topOrder.price, proceedQuantity, OrderStatus::PFill, timestamp);
-
-            passiveSide.updateTopOrderQuantity(topOrder.quantity - proceedQuantity);
-            return;
-        }
+        restingSide.insertOrder(std::move(order));
     }
-
-    if (!hasExecution)
-        outReports.emplace_back(std::in_place_type<ExecutionReport>,
-                                order.clientOrderId, order.orderId, order.instrument, order.side,
-                                order.price, order.quantity, OrderStatus::New, timestamp);
-
-    restingSide.insertOrder(order);
-}
+} // namespace
 
 void OrderBook::processOrder(
     Order &order,
     std::vector<std::variant<ExecutionReport, OrderReject>> &outReports)
 {
-    const std::string timestamp = utils::getCurrentTimestamp();
-
-    OrderBookSideAdapter<BuyComparator> buyAdapter(buyingSide);
-    OrderBookSideAdapter<SellComparator> sellAdapter(sellingSide);
+    const auto timestamp = utils::getCurrentTimestamp();
 
     if (order.side == Side::Sell)
     {
-        matchOrder(order, buyAdapter, sellAdapter, [](double passivePrice, double incomingPrice)
-                   { return passivePrice < incomingPrice; }, outReports, timestamp);
+        matchOrderImpl(order, buyingSide, sellingSide, BreakForSell{}, outReports, timestamp);
     }
     else
     {
-        matchOrder(order, sellAdapter, buyAdapter, [](double passivePrice, double incomingPrice)
-                   { return passivePrice > incomingPrice; }, outReports, timestamp);
+        matchOrderImpl(order, sellingSide, buyingSide, BreakForBuy{}, outReports, timestamp);
     }
 }
