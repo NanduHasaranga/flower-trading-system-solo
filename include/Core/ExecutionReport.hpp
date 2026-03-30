@@ -1,28 +1,38 @@
 #pragma once
 
-#include <string>
+#include <string_view>
 #include "Types.hpp"
+#include "Utils/FixedString.hpp"
+#include "Utils/TimeUtils.hpp"
 
 struct ExecutionReport
 {
-    std::string clientOrderId;
-    std::string orderId;
+    FixedString<16> clientOrderId;
+    FixedString<16> orderId;
     Instrument instrument;
     Side side;
     double price;
     int quantity;
     OrderStatus status;
-    std::string transactionTime;
+    utils::Timestamp transactionTime;
 
     ExecutionReport() = default;
 
     ExecutionReport(
-        std::string clientOrderId,
-        std::string orderId,
+        std::string_view clientOrderId,
+        std::string_view orderId,
         Instrument instrument,
         Side side,
         double price,
         int quantity,
         OrderStatus status,
-        std::string transactionTime) : clientOrderId(clientOrderId), orderId(orderId), instrument(instrument), side(side), price(price), quantity(quantity), status(status), transactionTime(std::move(transactionTime)) {}
+        utils::Timestamp transactionTime)
+        : clientOrderId(clientOrderId),
+          orderId(orderId),
+          instrument(instrument),
+          side(side),
+          price(price),
+          quantity(quantity),
+          status(status),
+          transactionTime(transactionTime) {}
 };
