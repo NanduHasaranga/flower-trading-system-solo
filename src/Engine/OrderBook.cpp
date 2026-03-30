@@ -80,7 +80,7 @@ namespace
                                     order.clientOrderId, order.orderId, order.instrument, order.side,
                                     order.price, order.quantity, OrderStatus::New, timestamp);
 
-        restingSide.insertOrder(order);
+        restingSide.insertOrder(std::move(order));
     }
 } // namespace
 
