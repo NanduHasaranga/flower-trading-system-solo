@@ -5,6 +5,7 @@
 #include "IO/CsvReader.hpp"
 #include "Utils/TimeUtils.hpp"
 #include "Utils/OrderIdGenerator.hpp"
+#include "Utils/FixedString.hpp"
 
 std::variant<Order, OrderReject> OrderProcessor::processRow(const CsvRow &row)
 {
@@ -35,8 +36,8 @@ OrderReject OrderProcessor::buildReject(const CsvRow &row, const std::string &re
 Order OrderProcessor::buildValidatedOrder(const CsvRow &row, const ValidationResult &result)
 {
     return Order{
-        std::string(fieldAt(row, 0)),
-        Utils::OrderIdGenerator::generateId(),
+        FixedString<16>(fieldAt(row, 0)),
+        FixedString<16>(Utils::OrderIdGenerator::generateId()),
         result.instrument,
         result.side,
         result.price,
