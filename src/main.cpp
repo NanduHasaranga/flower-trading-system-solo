@@ -1,18 +1,24 @@
 #include <iostream>
 #include <vector>
 #include <variant>
-#include "Engine\Exchange.hpp"
-#include "IO\CsvReader.hpp"
-#include "IO\OrderProcessor.hpp"
-#include "IO\CsvWriter.hpp"
-#include "Core\OrderReject.hpp"
+#include "Engine/Exchange.hpp"
+#include "IO/CsvReader.hpp"
+#include "IO/OrderProcessor.hpp"
+#include "IO/CsvWriter.hpp"
+#include "Core/OrderReject.hpp"
 
-int main()
+static constexpr const char *kDefaultInputPath = "data/orders.csv";
+static constexpr const char *kDefaultOutputPath = "data/execution.csv";
+
+int main(int argc, char *argv[])
 {
+    const char *inputPath = (argc > 1) ? argv[1] : kDefaultInputPath;
+    const char *outputPath = (argc > 2) ? argv[2] : kDefaultOutputPath;
+
     std::vector<std::variant<ExecutionReport, OrderReject>> records;
     Exchange exchange;
     CsvWriter writer;
-    CsvReader reader("data/orders.csv");
+    CsvReader reader(inputPath);
 
     while (auto row = reader.nextRow())
     {
@@ -29,6 +35,6 @@ int main()
         }
     }
 
-    writer.writeExecutions("data/execution.csv", records);
+    writer.writeExecutions(outputPath, records);
     return 0;
 }
