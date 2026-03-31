@@ -1,21 +1,34 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <QDir>
+#include <QDesktopServices>
+#include <QFile>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QMessageBox>
+#include <QStandardPaths>
+#include <QUrl>
+
+#include <exception>
+#include <variant>
+#include <vector>
+
+#include "Core/ExecutionReport.hpp"
+#include "Core/Order.hpp"
+#include "Core/OrderReject.hpp"
+#include "Engine/Exchange.hpp"
+#include "IO/CsvReader.hpp"
+#include "IO/CsvWriter.hpp"
+#include "IO/OrderProcessor.hpp"
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
 
-    this->setObjectName("MyMainWindow");
-    this->setStyleSheet(
-        "#MyMainWindow {"
-        "   border-image: url(:/resources/images/background1.png) 0 0 0 0 stretch stretch;"
-        "}"
-    );
-
-    connect(ui->btnOk, SIGNAL(clicked()),this,SLOT(on_btnOk_Clicked()));
-    connect(ui->btnCancel, SIGNAL(clicked()),this,SLOT(on_btnCancel_Clicked()));
+    updateUiState();
 }
 
 MainWindow::~MainWindow()
@@ -23,12 +36,32 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::on_btnOk_Clicked()
+void MainWindow::on_btnUpload_clicked()
 {
-    qDebug() << "Ok button clicked";
-}
+    const QString defaultDirectory = inputFilePath.isEmpty()
+                                         ? QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
+                                         : QFileInfo(inputFilePath).absolutePath();
 
-void MainWindow::on_btnCancel_Clicked()
-{
-    qDebug() << "Cancel button clicked";
+    const QString selectedFile = QFileDialog::getOpenFileName(
+        this,
+        tr("Select Order CSV"),
+        defaultDirectory,
+        tr("CSV Files (*.csv);;All Files (*.*)"));
+
+    if (selectedFile.isEmpty())
+    {
+        return;
+    }
+
+    inputFilePath = selectedFile;
+    generatedReportPath.clear();
+
+    ui->inputPathEdit->setText(inputFilePath);
+    ui->outputPathEdit->clear();
+    ui->statusLabel->setStyleSheet("font: 10pt \"Segoe UI\"; color: rgb(80, 80, 80);");
+    ui->statusLabel->setText(
+        tr("Input file selected: %1. Click Process to generate a new execution report.")
+            .arg(QFileInfo(inputFilePath).fileName()));
+
+    updateUiState();
 }
