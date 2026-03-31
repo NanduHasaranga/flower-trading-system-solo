@@ -11,7 +11,18 @@ qt_add_executable(TraderApp
     mainwindow.cpp
     mainwindow.h
     mainwindow.ui
-    resource.qrc
+    ../src/Core/OrderValidator.cpp
+    ../src/Engine/OrderBook.cpp
+    ../src/IO/CsvReader.cpp
+    ../src/IO/CsvWriter.cpp
+    ../src/IO/OrderProcessor.cpp
+    ../src/Utils/OrderIdGenerator.cpp
+    ../src/Utils/TimeUtils.cpp
+)
+
+target_include_directories(TraderApp
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/../include
 )
 
 target_link_libraries(TraderApp
