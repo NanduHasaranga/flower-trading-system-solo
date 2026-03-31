@@ -14,4 +14,9 @@ namespace Utils
         return std::string(buffer, static_cast<std::size_t>(ptr - buffer));
     }
 
+    void OrderIdGenerator::reset(long startId)
+    {
+        nextOrderId.store(startId, std::memory_order_relaxed);
+    }
+
 }
