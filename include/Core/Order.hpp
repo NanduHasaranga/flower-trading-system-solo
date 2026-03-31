@@ -2,11 +2,12 @@
 
 #include <string>
 #include "Types.hpp"
+#include "Utils/FixedString.hpp"
 
 struct Order
 {
-    std::string clientOrderId;
-    std::string orderId;
+    FixedString<16> clientOrderId;
+    FixedString<16> orderId;
     Instrument instrument;
     Side side;
     double price;

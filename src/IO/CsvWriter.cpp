@@ -1,35 +1,12 @@
 #include "IO/CsvWriter.hpp"
 #include "Core/Types.hpp"
 #include <charconv>
+#include <cstring>
 #include <fstream>
 #include <vector>
 
 namespace
 {
-    void appendInt(std::string &out, int value)
-    {
-        char buffer[16];
-        auto [ptr, ec] = std::to_chars(buffer, buffer + sizeof(buffer), value);
-        if (ec == std::errc())
-        {
-            out.append(buffer, static_cast<std::size_t>(ptr - buffer));
-            return;
-        }
-        out += '0';
-    }
-
-    void appendDouble(std::string &out, double value)
-    {
-        char buffer[32];
-        auto [ptr, ec] = std::to_chars(buffer, buffer + sizeof(buffer), value);
-        if (ec == std::errc())
-        {
-            out.append(buffer, static_cast<std::size_t>(ptr - buffer));
-            return;
-        }
-        out += '0';
-    }
-
     const char *statusToString(OrderStatus status)
     {
         switch (status)
@@ -46,6 +23,34 @@ namespace
             return "Reject";
         }
     }
+
+    struct LineBuilder
+    {
+        char buf[512];
+        char *p = buf;
+
+        void append(std::string_view sv)
+        {
+            std::memcpy(p, sv.data(), sv.size());
+            p += sv.size();
+        }
+
+        void append(char c) { *p++ = c; }
+
+        void appendInt(int value)
+        {
+            auto [end, ec] = std::to_chars(p, p + 16, value);
+            p = end;
+        }
+
+        void appendDouble(double value)
+        {
+            auto [end, ec] = std::to_chars(p, p + 32, value);
+            p = end;
+        }
+
+        std::size_t size() const { return static_cast<std::size_t>(p - buf); }
+    };
 }
 
 void CsvWriter::writeExecutions(const std::string &path, const std::vector<std::variant<ExecutionReport, OrderReject>> &reports)
@@ -60,47 +65,52 @@ void CsvWriter::writeExecutions(const std::string &path, const std::vector<std::
 
     for (const auto &report : reports)
     {
+        LineBuilder line;
+
         if (const auto *execution = std::get_if<ExecutionReport>(&report))
         {
-            output += execution->orderId;
-            output += ',';
-            output += execution->clientOrderId;
-            output += ',';
-            output += to_string(execution->instrument);
-            output += ',';
-            output += to_string(execution->side);
-            output += ',';
-            output += statusToString(execution->status);
-            output += ',';
-            appendInt(output, execution->quantity);
-            output += ',';
-            appendDouble(output, execution->price);
-            output += ',';
-            output += ',';
-            output += execution->transactionTime;
-            output += '\n';
-            continue;
+            line.append(execution->orderId);
+            line.append(',');
+            line.append(execution->clientOrderId);
+            line.append(',');
+            line.append(to_string(execution->instrument));
+            line.append(',');
+            line.append(to_string(execution->side));
+            line.append(',');
+            line.append(statusToString(execution->status));
+            line.append(',');
+            line.appendInt(execution->quantity);
+            line.append(',');
+            line.appendDouble(execution->price);
+            line.append(',');
+            line.append(',');
+            line.append(execution->transactionTime);
+            line.append('\n');
+        }
+        else
+        {
+            const auto &reject = std::get<OrderReject>(report);
+            line.append(reject.orderId);
+            line.append(',');
+            line.append(reject.clientOrderId);
+            line.append(',');
+            line.append(reject.instrument);
+            line.append(',');
+            line.append(reject.side);
+            line.append(',');
+            line.append("Reject");
+            line.append(',');
+            line.append(reject.quantity);
+            line.append(',');
+            line.append(reject.price);
+            line.append(',');
+            line.append(reject.reason);
+            line.append(',');
+            line.append(reject.timestamp);
+            line.append('\n');
         }
 
-        const auto &reject = std::get<OrderReject>(report);
-        output += reject.orderId;
-        output += ',';
-        output += reject.clientOrderId;
-        output += ',';
-        output += reject.instrument;
-        output += ',';
-        output += reject.side;
-        output += ',';
-        output += "Reject";
-        output += ',';
-        output += reject.quantity;
-        output += ',';
-        output += reject.price;
-        output += ',';
-        output += reject.reason;
-        output += ',';
-        output += reject.timestamp;
-        output += '\n';
+        output.append(line.buf, line.size());
     }
 
     file.write(output.data(), static_cast<std::streamsize>(output.size()));

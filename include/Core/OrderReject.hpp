@@ -2,6 +2,7 @@
 
 #include <string>
 #include <utility>
+#include "Utils/TimeUtils.hpp"
 
 struct OrderReject
 {
@@ -12,7 +13,7 @@ struct OrderReject
     std::string quantity;
     std::string price;
     std::string reason;
-    std::string timestamp;
+    utils::Timestamp timestamp;
 
     OrderReject() = default;
     OrderReject(std::string orderId,
@@ -22,7 +23,7 @@ struct OrderReject
                 std::string quantity,
                 std::string price,
                 std::string reason,
-                std::string timestamp)
+                utils::Timestamp timestamp)
         : orderId(std::move(orderId)),
           clientOrderId(std::move(clientOrderId)),
           instrument(std::move(instrument)),
@@ -30,7 +31,7 @@ struct OrderReject
           quantity(std::move(quantity)),
           price(std::move(price)),
           reason(std::move(reason)),
-          timestamp(std::move(timestamp))
+          timestamp(timestamp)
     {
     }
 };

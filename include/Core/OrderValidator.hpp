@@ -5,7 +5,7 @@
 #include <variant>
 #include "Core/Types.hpp"
 
-struct RawOrder;
+struct CsvRow;
 
 struct ValidationResult
 {
@@ -18,7 +18,7 @@ struct ValidationResult
 class OrderValidator
 {
 public:
-    static std::variant<ValidationResult, std::string> validate(const RawOrder &rawOrder);
+    static std::variant<ValidationResult, std::string> validate(const CsvRow &row);
 
 private:
     static bool tryInstrument(std::string_view value, Instrument &out);

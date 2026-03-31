@@ -30,9 +30,10 @@ private:
 public:
     OrderBookSide() : orders(Comparator{}) {}
 
-    void insertOrder(const Order &order)
+    void insertOrder(Order &&order)
     {
-        orders[order.price].push_back(order);
+        double price = order.price;
+        orders[price].push_back(std::move(order));
     }
 
     const Order &getBestOrder() const
