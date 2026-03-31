@@ -1,5 +1,4 @@
 #include "Engine/OrderBook.hpp"
-#include "Utils/TimeUtils.hpp"
 
 namespace
 {
@@ -86,9 +85,9 @@ namespace
 
 void OrderBook::processOrder(
     Order &order,
-    std::vector<std::variant<ExecutionReport, OrderReject>> &outReports)
+    std::vector<std::variant<ExecutionReport, OrderReject>> &outReports,
+    const utils::Timestamp &timestamp)
 {
-    const auto timestamp = utils::getCurrentTimestamp();
 
     if (order.side == Side::Sell)
     {

@@ -3,24 +3,23 @@
 #include "Core/Order.hpp"
 #include "Core/OrderReject.hpp"
 #include "IO/CsvReader.hpp"
-#include "Utils/TimeUtils.hpp"
 #include "Utils/OrderIdGenerator.hpp"
 #include "Utils/FixedString.hpp"
 
-std::variant<Order, OrderReject> OrderProcessor::processRow(const CsvRow &row)
+std::variant<Order, OrderReject> OrderProcessor::processRow(const CsvRow &row, const utils::Timestamp &timestamp)
 {
     auto validation = OrderValidator::validate(row);
 
     if (auto *rejectReason = std::get_if<std::string>(&validation))
     {
-        return buildReject(row, *rejectReason);
+        return buildReject(row, *rejectReason, timestamp);
     }
 
     const ValidationResult &result = std::get<ValidationResult>(validation);
     return buildValidatedOrder(row, result);
 }
 
-OrderReject OrderProcessor::buildReject(const CsvRow &row, const std::string &rejectReason)
+OrderReject OrderProcessor::buildReject(const CsvRow &row, const std::string &rejectReason, const utils::Timestamp &timestamp)
 {
     return OrderReject{
         Utils::OrderIdGenerator::generateId(),
@@ -30,7 +29,7 @@ OrderReject OrderProcessor::buildReject(const CsvRow &row, const std::string &re
         std::string(fieldAt(row, 3)),
         std::string(fieldAt(row, 4)),
         rejectReason,
-        utils::getCurrentTimestamp()};
+        timestamp};
 }
 
 Order OrderProcessor::buildValidatedOrder(const CsvRow &row, const ValidationResult &result)
@@ -42,4 +41,4 @@ Order OrderProcessor::buildValidatedOrder(const CsvRow &row, const ValidationRes
         result.side,
         result.price,
         result.quantity};
-}
+}
