@@ -120,3 +120,80 @@ void MainWindow::on_btnProcess_clicked()
     QMessageBox::information(this, tr("Processing Complete"), tr("Execution report generated successfully."));
 }
 
+void MainWindow::on_btnViewReport_clicked()
+{
+    if (generatedReportPath.isEmpty() || !QFileInfo::exists(generatedReportPath))
+    {
+        QMessageBox::warning(this, tr("No Report"), tr("Please process an input file before viewing the report."));
+        updateUiState();
+        return;
+    }
+
+    if (!QDesktopServices::openUrl(QUrl::fromLocalFile(generatedReportPath)))
+    {
+        QMessageBox::critical(this, tr("Open Failed"), tr("Unable to open the execution report."));
+        return;
+    }
+
+    ui->statusLabel->setStyleSheet("font: 10pt \"Segoe UI\"; color: rgb(24, 128, 56);");
+    ui->statusLabel->setText(tr("Opened report: %1").arg(generatedReportPath));
+}
+
+void MainWindow::on_btnDownload_clicked()
+{
+    if (generatedReportPath.isEmpty() || !QFileInfo::exists(generatedReportPath))
+    {
+        QMessageBox::warning(this, tr("No Report"), tr("Please process an input file before downloading."));
+        updateUiState();
+        return;
+    }
+
+    QString defaultDirectory = QStandardPaths::writableLocation(QStandardPaths::DownloadLocation);
+    if (defaultDirectory.isEmpty())
+    {
+        defaultDirectory = QFileInfo(generatedReportPath).absolutePath();
+    }
+
+    const QString targetPath = QFileDialog::getSaveFileName(
+        this,
+        tr("Save Execution Report"),
+        QDir(defaultDirectory).filePath("execution_report.csv"),
+        tr("CSV Files (*.csv);;All Files (*.*)"));
+
+    if (targetPath.isEmpty())
+    {
+        return;
+    }
+
+    const QString sourceAbsolutePath = QFileInfo(generatedReportPath).absoluteFilePath();
+    const QString targetAbsolutePath = QFileInfo(targetPath).absoluteFilePath();
+    if (QString::compare(sourceAbsolutePath, targetAbsolutePath, Qt::CaseInsensitive) == 0)
+    {
+        ui->statusLabel->setStyleSheet("font: 10pt \"Segoe UI\"; color: rgb(24, 128, 56);");
+        ui->statusLabel->setText(tr("Report already available at: %1").arg(targetPath));
+
+        QMessageBox::information(
+            this,
+            tr("Download Complete"),
+            tr("Execution report is already saved at the selected location."));
+        return;
+    }
+
+    if (QFile::exists(targetPath) && !QFile::remove(targetPath))
+    {
+        QMessageBox::critical(this, tr("Save Failed"), tr("Unable to overwrite the selected file."));
+        return;
+    }
+
+    if (!QFile::copy(generatedReportPath, targetPath))
+    {
+        QMessageBox::critical(this, tr("Save Failed"), tr("Unable to save the execution report."));
+        return;
+    }
+
+    ui->statusLabel->setStyleSheet("font: 10pt \"Segoe UI\"; color: rgb(24, 128, 56);");
+    ui->statusLabel->setText(tr("Report downloaded to: %1").arg(targetPath));
+
+    QMessageBox::information(this, tr("Download Complete"), tr("Execution report saved successfully."));
+}
+
