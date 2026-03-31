@@ -197,3 +197,46 @@ void MainWindow::on_btnDownload_clicked()
     QMessageBox::information(this, tr("Download Complete"), tr("Execution report saved successfully."));
 }
 
+void MainWindow::updateUiState()
+{
+    const bool hasInputFile = !inputFilePath.isEmpty() && QFileInfo::exists(inputFilePath);
+    const bool hasReportFile = !generatedReportPath.isEmpty() && QFileInfo::exists(generatedReportPath);
+
+    ui->btnProcess->setEnabled(hasInputFile);
+    ui->btnViewReport->setEnabled(hasReportFile);
+    ui->btnDownload->setEnabled(hasReportFile);
+}
+
+bool MainWindow::processOrders(const std::string &inputPath, const std::string &outputPath, std::string &errorMessage) const
+{
+    try
+    {
+        std::vector<std::variant<ExecutionReport, OrderReject>> records;
+        Exchange exchange;
+        CsvWriter writer;
+        CsvReader reader(inputPath);
+
+        while (auto row = reader.nextRow())
+        {
+            auto result = OrderProcessor::processRow(*row);
+
+            if (auto *order = std::get_if<Order>(&result))
+            {
+                auto &orderBook = exchange.getOrderBook(*order);
+                orderBook.processOrder(*order, records);
+            }
+            else
+            {
+                records.emplace_back(std::get<OrderReject>(result));
+            }
+        }
+
+        writer.writeExecutions(outputPath, records);
+        return true;
+    }
+    catch (const std::exception &ex)
+    {
+        errorMessage = ex.what();
+        return false;
+    }
+}
