@@ -6,148 +6,214 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>537</width>
-    <height>377</height>
+    <width>760</width>
+    <height>420</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Trader App</string>
-  </property>
-  <property name="styleSheet">
-   <string notr="true">background-image: url(:/resources/img/background1.png);</string>
+   <string>Flower Trading System</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>140</x>
-      <y>0</y>
-      <width>251</width>
-      <height>91</height>
-     </rect>
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <property name="leftMargin">
+     <number>24</number>
     </property>
-    <property name="styleSheet">
-     <string notr="true">QLabel{
-	font: 700 25pt &quot;Segoe UI&quot;;
-	color: rgb(255, 255, 255);
-}</string>
+    <property name="topMargin">
+     <number>24</number>
     </property>
-    <property name="text">
-     <string>Trading System </string>
+    <property name="rightMargin">
+     <number>24</number>
     </property>
-   </widget>
-   <widget class="QLabel" name="label_2">
-    <property name="geometry">
-     <rect>
-      <x>70</x>
-      <y>100</y>
-      <width>111</width>
-      <height>21</height>
-     </rect>
+    <property name="bottomMargin">
+     <number>24</number>
     </property>
-    <property name="styleSheet">
-     <string notr="true">font: 700 16pt &quot;Segoe UI&quot;;</string>
+    <property name="spacing">
+     <number>14</number>
     </property>
-    <property name="text">
-     <string>Username :</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_3">
-    <property name="geometry">
-     <rect>
-      <x>70</x>
-      <y>140</y>
-      <width>121</width>
-      <height>21</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QLabel{
-	font: 700 16pt &quot;Segoe UI&quot;;
-}</string>
-    </property>
-    <property name="text">
-     <string>Password :</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit">
-    <property name="geometry">
-     <rect>
-      <x>200</x>
-      <y>100</y>
-      <width>201</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QLineEdit{
-	font: 16pt &quot;Segoe UI&quot;;
-}</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_2">
-    <property name="geometry">
-     <rect>
-      <x>200</x>
-      <y>140</y>
-      <width>201</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QLineEdit{
-	font: 16pt &quot;Segoe UI&quot;;
-}</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btnOk">
-    <property name="geometry">
-     <rect>
-      <x>210</x>
-      <y>190</y>
-      <width>81</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QPushButton{
-	font: 700 16pt &quot;Segoe UI&quot;;
-	background-color: rgb(255, 255, 255);
-	color: rgb(0, 0, 0);
-}</string>
-    </property>
-    <property name="text">
-     <string>OK</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="btnCancel">
-    <property name="geometry">
-     <rect>
-      <x>310</x>
-      <y>190</y>
-      <width>91</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QPushButton{
-	background-color: rgb(255, 255, 255);
-	font: 700 16pt &quot;Segoe UI&quot;;
-	color: rgb(0, 0, 0);
-}</string>
-    </property>
-    <property name="text">
-     <string>Cancel</string>
-    </property>
-   </widget>
+    <item>
+     <widget class="QLabel" name="titleLabel">
+      <property name="styleSheet">
+       <string notr="true">font: 700 22pt &quot;Segoe UI&quot;;</string>
+      </property>
+      <property name="text">
+       <string>Order Processor</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLabel" name="subtitleLabel">
+      <property name="styleSheet">
+       <string notr="true">font: 11pt &quot;Segoe UI&quot;; color: rgb(70, 70, 70);</string>
+      </property>
+      <property name="text">
+       <string>Upload order.csv, process orders, then download execution_report.csv</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="inputRowLayout">
+      <property name="spacing">
+       <number>8</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="inputLabel">
+        <property name="minimumSize">
+         <size>
+          <width>90</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Input File</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="inputPathEdit">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+        <property name="placeholderText">
+         <string>No file selected</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnUpload">
+        <property name="minimumSize">
+         <size>
+          <width>110</width>
+          <height>34</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Upload CSV</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="outputRowLayout">
+      <property name="spacing">
+       <number>8</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="outputLabel">
+        <property name="minimumSize">
+         <size>
+          <width>90</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Output File</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLineEdit" name="outputPathEdit">
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+        <property name="placeholderText">
+         <string>Generated file path appears here after processing</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="buttonsLayout">
+      <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="btnProcess">
+        <property name="minimumSize">
+         <size>
+          <width>140</width>
+          <height>36</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Process</string>
+        </property>
+       </widget>
+      </item>
+            <item>
+             <widget class="QPushButton" name="btnViewReport">
+                <property name="minimumSize">
+                 <size>
+                    <width>140</width>
+                    <height>36</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>View Report</string>
+                </property>
+             </widget>
+            </item>
+      <item>
+       <widget class="QPushButton" name="btnDownload">
+        <property name="minimumSize">
+         <size>
+          <width>160</width>
+          <height>36</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>Download Report</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QLabel" name="statusLabel">
+      <property name="styleSheet">
+       <string notr="true">font: 10pt &quot;Segoe UI&quot;; color: rgb(80, 80, 80);</string>
+      </property>
+      <property name="text">
+       <string>Select an input CSV file to get started.</string>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <spacer name="verticalSpacer">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>40</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>537</width>
-     <height>33</height>
+     <width>760</width>
+     <height>22</height>
     </rect>
    </property>
   </widget>
