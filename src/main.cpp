@@ -6,6 +6,7 @@
 #include "IO/OrderProcessor.hpp"
 #include "IO/CsvWriter.hpp"
 #include "Core/OrderReject.hpp"
+#include "Utils/TimeUtils.hpp"
 
 static constexpr const char *kDefaultInputPath = "data/orders.csv";
 static constexpr const char *kDefaultOutputPath = "data/execution.csv";
@@ -22,12 +23,13 @@ int main(int argc, char *argv[])
 
     while (auto row = reader.nextRow())
     {
-        auto result = OrderProcessor::processRow(*row);
+        const auto timestamp = utils::getCurrentTimestamp();
+        auto result = OrderProcessor::processRow(*row, timestamp);
 
         if (auto *order = std::get_if<Order>(&result))
         {
             auto &orderBook = exchange.getOrderBook(*order);
-            orderBook.processOrder(*order, records);
+            orderBook.processOrder(*order, records, timestamp);
         }
         else
         {
@@ -37,4 +39,4 @@ int main(int argc, char *argv[])
 
     writer.writeExecutions(outputPath, records);
     return 0;
-}
+}
