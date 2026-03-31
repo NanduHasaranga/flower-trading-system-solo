@@ -21,6 +21,7 @@
 #include "IO/CsvReader.hpp"
 #include "IO/CsvWriter.hpp"
 #include "IO/OrderProcessor.hpp"
+#include "Utils/TimeUtils.hpp"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -218,12 +219,13 @@ bool MainWindow::processOrders(const std::string &inputPath, const std::string &
 
         while (auto row = reader.nextRow())
         {
-            auto result = OrderProcessor::processRow(*row);
+            const auto timestamp = utils::getCurrentTimestamp();
+            auto result = OrderProcessor::processRow(*row, timestamp);
 
             if (auto *order = std::get_if<Order>(&result))
             {
                 auto &orderBook = exchange.getOrderBook(*order);
-                orderBook.processOrder(*order, records);
+                orderBook.processOrder(*order, records, timestamp);
             }
             else
             {
