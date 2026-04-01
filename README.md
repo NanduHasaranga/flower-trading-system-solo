@@ -1,52 +1,96 @@
 # Flower Trading System
 
-A high-performance matching engine for a flower trading exchange built in C++20. This project implements a central limit order book (CLOB) that reads incoming orders, processes them using a standard Price-Time Priority matching algorithm, and outputs execution reports.
+A high-performance matching engine for a flower trading exchange built in C++20. The project implements a central limit order book (CLOB) that reads incoming orders, matches them with price-time priority, and writes execution reports.
+
+The repository supports two ways to run the application:
+
+- CLI mode for headless execution without Qt.
+- GUI mode for interactive use with a Qt Widgets front end.
+
+Use a separate build directory for each mode. CMake stores the source directory in the build tree, so a folder configured from `traderApp/CMakeLists.txt` cannot be re-used for the root project without deleting its cache first.
 
 ## Architecture
 
-- **Core (`include/Core/`)**: Domain entities (`Order`, `ExecutionReport`, `OrderReject`), validation logic, and common types.
-- **Engine (`include/Engine/`)**: The core matching logic. The `Exchange` manages multiple `OrderBook` instances (one per instrument).
-- **IO (`include/IO/`)**: CSV parsing (`orders.csv`) and output formatting (`execution.csv`).
-- **Utils (`include/Utils/`)**: Utilities including `FixedString` (stack-allocated strings), `Timestamp` (cached, zero-allocation timestamps), and `OrderIdGenerator`.
+- **Core (`include/Core/`)**: Domain entities such as `Order`, `ExecutionReport`, and `OrderReject`, plus validation and shared types.
+- **Engine (`include/Engine/`)**: Matching logic. `Exchange` manages one `OrderBook` per instrument.
+- **IO (`include/IO/`)**: CSV parsing and CSV output.
+- **Utils (`include/Utils/`)**: Helpers such as `FixedString`, `TimeUtils`, and `OrderIdGenerator`.
+- **GUI (`traderApp/`)**: Qt Widgets application for uploading an order file and viewing the generated report.
 
-## Prerequisites
+## Requirements
 
-- A C++ compiler supporting **C++20** (e.g., GCC 11+, Clang 14+, MSVC 19.30+).
-- **CMake 3.20+** (recommended) or manual compilation with `g++`.
+- **C++ compiler**: A compiler with C++20 support, such as GCC 11+, Clang 14+, or MSVC 19.30+.
+- **CMake**: 3.20 or newer.
+- **Qt for GUI only**: Qt 6.5 or newer with the Core and Widgets modules.
+- **Matching toolchain**: Use the same compiler family for Qt and the build, for example MSVC with an MSVC Qt package or MinGW with a MinGW Qt package.
+- The Qt prefix you pass to CMake must contain Qt6Config.cmake.
 
-## Building
+If you only want the CLI app, Qt is not required.
 
-### Using CMake (recommended)
+## Build and Run: CLI
 
-```bash
-cmake -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build --config Release
+The CLI target is built from the repository root and does not require Qt. The examples below use MinGW Makefiles on Windows.
+
+```powershell
+cmake -G "MinGW Makefiles" -S . -B build-cli -DBUILD_GUI=OFF -DCMAKE_BUILD_TYPE=Release
+cmake --build build-cli
 ```
 
-### Manual compilation
+Run the executable from the build output directory:
 
-```bash
-g++ -O3 -std=c++20 src/Core/*.cpp src/Engine/*.cpp src/IO/*.cpp src/Utils/*.cpp src/main.cpp -I include/ -o exchange_app
+```powershell
+.\build-cli\exchange_app.exe
 ```
 
-## Running the Application
-
-The executable supports optional input and output paths:
+The CLI supports optional input and output paths:
 
 ```text
 exchange_app [input_csv_path] [output_csv_path]
 ```
 
-Defaults: input `data/orders.csv`, output `data/execution.csv`.
+Defaults:
 
-```bash
-./exchange_app
-./exchange_app data/example1.csv data/output.csv
+- Input: `data/orders.csv`
+- Output: `data/execution.csv`
+
+Examples:
+
+```powershell
+.\build-cli\exchange_app.exe
+.\build-cli\exchange_app.exe data\example1.csv data\output.csv
 ```
 
-## Running Scenario Tests
+## Build and Run: GUI
 
-Eight CSV-based scenario tests are available under `tests/cases/`.
+Enable the GUI build and point CMake to your Qt 6 installation. Replace the Qt path below with your local installation path. The Qt kit must match the compiler you use for the build.
+
+If CMake cannot find Qt6, the path is wrong or Qt is not installed in that compiler kit.
+
+```powershell
+cmake -G "MinGW Makefiles" -S . -B build-gui -DBUILD_GUI=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="C:\Qt\6.5.3\mingw_64"
+cmake --build build-gui --target TraderApp
+```
+
+Run the GUI executable:
+
+```powershell
+.\build-gui\TraderApp.exe
+```
+
+On Windows, the build runs `windeployqt` after linking, so the Qt DLLs and required plugins are copied next to `TraderApp.exe` automatically.
+
+GUI workflow:
+
+- Upload an input CSV file.
+- Process the orders.
+- View the generated execution report.
+- Download the report if needed.
+
+The GUI generates `execution_report.csv` next to the selected input file.
+
+## Scenario Tests
+
+CSV-based scenario tests are available under `tests/cases/`.
 
 ```powershell
 # Run tests only
@@ -56,12 +100,12 @@ Eight CSV-based scenario tests are available under `tests/cases/`.
 ./tests/run_csv_scenarios.ps1 -BuildBeforeRun
 ```
 
-The script replaces `data/orders.csv` with each scenario input, runs the executable, and compares the generated output against expected results.
+The script replaces `data/orders.csv` with each scenario input, runs the executable, and compares the generated output against the expected results.
 
-## Performance Highlights
+## Performance Notes
 
-- **Zero-allocation timestamps** — cached per-millisecond via `thread_local`, no heap allocation.
-- **Stack-allocated strings** — `ExecutionReport` uses `FixedString<16>` for IDs, eliminating per-report heap allocations.
-- **Move semantics** — resting orders are moved into the order book, avoiding string copies.
-- **Bulk I/O** — output is built in a pre-reserved buffer and written in a single `write()` syscall.
-- **Fast formatting** — `std::to_chars` / `std::from_chars` for all numeric conversions (no locale overhead).
+- Zero-allocation timestamps are cached per millisecond.
+- `ExecutionReport` uses stack-allocated fixed-size strings for identifiers.
+- Resting orders are moved into the book to avoid unnecessary string copies.
+- Output is written in bulk using a pre-reserved buffer.
+- Numeric parsing and formatting use `std::from_chars` and `std::to_chars`.
