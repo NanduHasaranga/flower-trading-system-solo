@@ -104,8 +104,13 @@ The script replaces `data/orders.csv` with each scenario input, runs the executa
 
 ## Performance Notes
 
-- Zero-allocation timestamps are cached per millisecond.
-- `ExecutionReport` uses stack-allocated fixed-size strings for identifiers.
-- Resting orders are moved into the book to avoid unnecessary string copies.
-- Output is written in bulk using a pre-reserved buffer.
-- Numeric parsing and formatting use `std::from_chars` and `std::to_chars`.
+- Release builds are optimized by default, with compiler-specific flags enabled in CMake (`-O3` for GCC/Clang and `/O2` for MSVC).
+- The benchmark build path uses aggressive native optimization flags (`-O3`, `-march=native`, `-flto`, `-DNDEBUG`) for peak throughput testing.
+- Timestamps use a thread-local per-millisecond cache (`utils::Timestamp`) to avoid repeated formatting work and heap allocations.
+- Hot-path identifiers (`Order` and `ExecutionReport` IDs) use fixed-capacity stack storage via `FixedString<16>` instead of dynamic string allocations.
+- CSV row parsing reuses a reserved line buffer and stores fields as `std::string_view`, minimizing per-row allocations and copies.
+- Validation parses numeric fields with `std::from_chars` for fast, locale-independent conversion.
+- Generated order IDs use an atomic counter with relaxed ordering and `std::to_chars` into a stack buffer.
+- Matching emits execution events with in-place `emplace_back` construction and moves resting orders into the book to reduce copies.
+- Book updates mutate top-level quantities in place and maintain price-level FIFO queues for efficient price-time matching.
+- CSV output is batch-built in memory with pre-reserved capacity, per-line stack buffers, `std::memcpy`, `std::to_chars`, and a single bulk file write over a large stream buffer.
