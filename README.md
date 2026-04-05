@@ -2,6 +2,8 @@
 
 A high-performance matching engine for a flower trading exchange built in C++20. The project implements a central limit order book (CLOB) that reads incoming orders, matches them with price-time priority, and writes execution reports.
 
+<img width="762" height="452" alt="image1" src="https://github.com/user-attachments/assets/e0ab864a-b390-49a8-ad9b-42e749a41042" />
+
 The repository supports two ways to run the application:
 
 - CLI mode for headless execution without Qt.
